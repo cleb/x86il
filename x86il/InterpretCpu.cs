@@ -10,6 +10,10 @@ namespace x86il
     public class InterpretCpu : ICpu
     {
         private Registers registers;
+        private Flags flags;
+        public Flags CpuFlags{
+            get => flags;
+        }
         int ip = 0;
         byte[] memory;
 
@@ -46,16 +50,33 @@ namespace x86il
         {
             return registers.Get(register);
         }
+        public UInt16 GetRegister(Reg16 register)
+        {
+            return registers.Get(register);
+        }
 
         public void Mov8Imm(Reg8 register)
         {
             registers.Set(register, memory[ip+1]);
             ip += 2;
         }
+        public void Mov16Imm(Reg16 register)
+        {
+            registers.Set(register, (UInt16)((memory[ip + 2] << 8) | memory[ip + 1]));
+            ip += 3;
+        }
 
         public void Xor8()
         {
-            ModRm((x, y) => (UInt16)(x ^ y));                                     
+            ModRm((x, y) => {
+                var result = (UInt16)(x ^ y);
+                if(result == 0)
+                {
+                    flags |= Flags.Zero;
+                }
+
+                return result;
+            });                                     
         }
 
         public void Execute(int ipStart, int ipEnd)
@@ -91,6 +112,30 @@ namespace x86il
                         break;
                     case 0xb7:
                         Mov8Imm(Reg8.bh);
+                        break;
+                    case 0xb8:
+                        Mov16Imm(Reg16.ax);
+                        break;
+                    case 0xb9:
+                        Mov16Imm(Reg16.cx);
+                        break;
+                    case 0xba:
+                        Mov16Imm(Reg16.dx);
+                        break;
+                    case 0xbb:
+                        Mov16Imm(Reg16.bx);
+                        break;
+                    case 0xbc:
+                        Mov16Imm(Reg16.sp);
+                        break;
+                    case 0xbd:
+                        Mov16Imm(Reg16.bp);
+                        break;
+                    case 0xbe:
+                        Mov16Imm(Reg16.si);
+                        break;
+                    case 0xbf:
+                        Mov16Imm(Reg16.di);
                         break;
                     default:
                         throw new NotImplementedException();

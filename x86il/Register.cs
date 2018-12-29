@@ -62,7 +62,7 @@ namespace x86il
         }
         public void Set(Reg16 register, UInt16 value)
         {
-            registers[(int)register] &= (0xffff0000 | value);
+            registers[(int)register] |= (0xffff0000 | value);
         }
     }
 

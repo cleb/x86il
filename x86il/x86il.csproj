@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Flags.cs" />
     <Compile Include="ICpu.cs" />
     <Compile Include="InterpretCpu.cs" />
     <Compile Include="ModRM.cs" />
