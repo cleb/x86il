@@ -8,6 +8,6 @@ namespace x86il
 {
     interface ICpu
     {
-        void Execute(Byte[] code);
+        void Execute(int ipStart, int ipEnd);
     }
 }
