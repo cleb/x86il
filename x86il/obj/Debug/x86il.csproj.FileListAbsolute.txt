@@ -1,0 +1,7 @@
+C:\Users\jjuda\source\repos\x86il\x86il\bin\Debug\x86il.exe.config
+C:\Users\jjuda\source\repos\x86il\x86il\bin\Debug\x86il.exe
+C:\Users\jjuda\source\repos\x86il\x86il\bin\Debug\x86il.pdb
+C:\Users\jjuda\source\repos\x86il\x86il\obj\Debug\x86il.csprojResolveAssemblyReference.cache
+C:\Users\jjuda\source\repos\x86il\x86il\obj\Debug\x86il.csproj.CoreCompileInputs.cache
+C:\Users\jjuda\source\repos\x86il\x86il\obj\Debug\x86il.exe
+C:\Users\jjuda\source\repos\x86il\x86il\obj\Debug\x86il.pdb
