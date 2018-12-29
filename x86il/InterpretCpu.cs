@@ -13,6 +13,29 @@ namespace x86il
         int ip = 0;
         byte[] memory;
 
+        private void ModRm(Func<UInt16, UInt16, UInt16> function)
+        {
+            byte modrm = memory[ip + 1];
+            switch(modrm >> 6)
+            {
+                case 0x00:
+                    throw new NotImplementedException();
+                    break;
+                case 0x01:
+                    throw new NotImplementedException();
+                    break;
+                case 0x02:
+                    throw new NotImplementedException();
+                    break;
+                case 0x03:
+                    Reg8 r1 = (Reg8) ((modrm >> 3) & 7);
+                    Reg8 r2 = (Reg8)((modrm) & 7);
+                    registers.Set(r1, (byte) function(registers.Get(r1), registers.Get(r2)));
+                    ip += 2;
+                    break;
+            }
+        }
+
         public InterpretCpu(byte[] mem)
         {
             memory = mem;
@@ -30,6 +53,11 @@ namespace x86il
             ip += 2;
         }
 
+        public void Xor8()
+        {
+            ModRm((x, y) => (UInt16)(x ^ y));                                     
+        }
+
         public void Execute(int ipStart, int ipEnd)
         {
             ip = ipStart;
@@ -37,6 +65,9 @@ namespace x86il
             {
                 switch (memory[ip])
                 {
+                    case 0x30:
+                        Xor8();
+                        break;
                     case 0xb0:
                         Mov8Imm(Reg8.al);
                         break;
@@ -61,6 +92,8 @@ namespace x86il
                     case 0xb7:
                         Mov8Imm(Reg8.bh);
                         break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
         }
