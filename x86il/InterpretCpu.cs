@@ -9,18 +9,21 @@ namespace x86il
 
     public class InterpretCpu : ICpu
     {
-        private Registers registers;
-        private Flags flags;
-        public Flags CpuFlags{
+        public Registers registers;
+        public Flags flags;
+        public Flags CpuFlags {
             get => flags;
         }
         int ip = 0;
         byte[] memory;
+        Dictionary<Byte, Action> IntHandlers;
 
-        private void ModRm(Func<UInt16, UInt16, UInt16> function)
+        private void ModRm(Func<UInt16, UInt16, UInt16> function, 
+            RegisterType r1Type = RegisterType.reg8, 
+            RegisterType r2Type = RegisterType.reg8) 
         {
             byte modrm = memory[ip + 1];
-            switch(modrm >> 6)
+            switch (modrm >> 6)
             {
                 case 0x00:
                     throw new NotImplementedException();
@@ -32,12 +35,15 @@ namespace x86il
                     throw new NotImplementedException();
                     break;
                 case 0x03:
-                    Reg8 r1 = (Reg8) ((modrm >> 3) & 7);
-                    Reg8 r2 = (Reg8)((modrm) & 7);
-                    registers.Set(r1, (byte) function(registers.Get(r1), registers.Get(r2)));
+                    var r1 = (UInt16)((modrm >> 3) & 7);
+                    var r2 = (UInt16)((modrm) & 7);
+                    registers.Set(r1, 
+                        (byte)function(registers.Get(r1,r1Type), 
+                        registers.Get(r2,r2Type)),r1Type);
                     ip += 2;
                     break;
             }
+            
         }
 
         public InterpretCpu(byte[] mem)
@@ -54,6 +60,19 @@ namespace x86il
         {
             return registers.Get(register);
         }
+        public UInt16 GetRegister(Segments register)
+        {
+            return registers.Get(register);
+        }
+
+        public void SetRegister(Reg8 register, Byte value)
+        {
+            registers.Set(register,value);
+        }
+        public void SetRegister(Reg16 register, UInt16 value)
+        {
+            registers.Set(register, value);
+        }
 
         public void Mov8Imm(Reg8 register)
         {
@@ -64,6 +83,18 @@ namespace x86il
         {
             registers.Set(register, (UInt16)((memory[ip + 2] << 8) | memory[ip + 1]));
             ip += 3;
+        }
+
+        public void Interrupt()
+        {
+            if (IntHandlers.ContainsKey(memory[ip + 1]))
+            {
+                IntHandlers[memory[ip + 1]]();
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public void Xor8()
@@ -79,6 +110,11 @@ namespace x86il
             });                                     
         }
 
+        public void MovSegRM16()
+        {
+            ModRm((x, y) => y,RegisterType.segment);
+        }
+
         public void Execute(int ipStart, int ipEnd)
         {
             ip = ipStart;
@@ -88,6 +124,9 @@ namespace x86il
                 {
                     case 0x30:
                         Xor8();
+                        break;
+                    case 0x8e:
+                        MovSegRM16();
                         break;
                     case 0xb0:
                         Mov8Imm(Reg8.al);
@@ -136,6 +175,9 @@ namespace x86il
                         break;
                     case 0xbf:
                         Mov16Imm(Reg16.di);
+                        break;
+                    case 0xcd:
+                        Interrupt();
                         break;
                     default:
                         throw new NotImplementedException();

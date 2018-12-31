@@ -13,7 +13,8 @@ C:\Users\jjuda\source\repos\x86il\x86ilTests\bin\Debug\x86il.pdb
 C:\Users\jjuda\source\repos\x86il\x86ilTests\bin\Debug\x86il.exe.config
 C:\Users\jjuda\source\repos\x86il\x86ilTests\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.xml
 C:\Users\jjuda\source\repos\x86il\x86ilTests\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
-C:\Users\jjuda\source\repos\x86il\x86ilTests\obj\Debug\x86ilTests.csprojResolveAssemblyReference.cache
 C:\Users\jjuda\source\repos\x86il\x86ilTests\obj\Debug\x86ilTests.csproj.CoreCompileInputs.cache
 C:\Users\jjuda\source\repos\x86il\x86ilTests\obj\Debug\x86ilTests.dll
 C:\Users\jjuda\source\repos\x86il\x86ilTests\obj\Debug\x86ilTests.pdb
+C:\Users\jjuda\source\repos\x86il\x86ilTests\obj\Debug\x86ilTests.csprojAssemblyReference.cache
+C:\Users\jjuda\source\repos\x86il\x86ilTests\obj\Debug\x86ilTests.csproj.CopyComplete

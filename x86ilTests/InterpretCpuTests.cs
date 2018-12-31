@@ -38,5 +38,13 @@ namespace x86il.Tests
             cpu.Execute(0, 2);
             Assert.AreEqual(0x42, cpu.GetRegister(Reg16.bx));
         }
+        [TestMethod()]
+        public void ExecuteTestMovEsAx()
+        {
+            var memory = new Byte[] { 0xb8, 0x42, 0x00, 0x8e, 0xc0 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 5);
+            Assert.AreEqual(0x42, cpu.GetRegister(Segments.es));
+        }
     }
 }
