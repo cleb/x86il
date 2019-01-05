@@ -13,5 +13,10 @@ namespace x86il
         UInt16 GetRegister(Reg16 register);
         void SetRegister(Reg8 register, Byte value);
         void SetRegister(Reg16 register, UInt16 value);
+        void SetRegister(Segments register, UInt16 value);
+
+        Byte GetInDs(UInt16 offset);
+        void SetInterruptHandler(Byte number, Action handler);
+        
     }
 }

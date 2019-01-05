@@ -66,12 +66,12 @@ namespace x86il
         {
             if (register < Reg8.ah)
             {
-                registers[(int)register] &= 0xffffff00;
+                registers[(int)register] &= 0xff00;
                 registers[(int)register] |= value;
             }
             else
             {
-                registers[(int)register] &= 0xffff00ff;
+                registers[(int)register - (int)Reg8.ah] &= 0xff;
                 registers[(register - Reg8.ah)] |= (uint)(value<<8);
             }
         }

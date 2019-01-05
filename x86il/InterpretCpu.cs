@@ -50,6 +50,7 @@ namespace x86il
         {
             memory = mem;
             registers = new Registers();
+            IntHandlers = new Dictionary<byte, Action>();
         }
 
         public Byte GetRegister(Reg8 register)
@@ -73,6 +74,10 @@ namespace x86il
         {
             registers.Set(register, value);
         }
+        public void SetRegister(Segments register, UInt16 value)
+        {
+            registers.Set(register, value);
+        }
 
         public void Mov8Imm(Reg8 register)
         {
@@ -90,6 +95,7 @@ namespace x86il
             if (IntHandlers.ContainsKey(memory[ip + 1]))
             {
                 IntHandlers[memory[ip + 1]]();
+                ip += 2;
             }
             else
             {
@@ -115,6 +121,46 @@ namespace x86il
             ModRm((x, y) => y,RegisterType.segment);
         }
 
+        public void PushValue(UInt16 Value)
+        {
+            var sp = registers.Get(Reg16.sp);
+            memory[(registers.Get(Segments.ss) << 4) + sp] = (Byte)(Value & 0xff);
+            memory[(registers.Get(Segments.ss) << 4) + sp + 1] = (Byte)(Value >> 8 & 0xff);
+            registers.Set(Reg16.sp, (UInt16)(sp - 2));
+        }
+
+        public UInt16 PopValue16()
+        {
+            var sp = registers.Get(Reg16.sp);
+            var ret = (UInt16)((UInt16)(memory[(registers.Get(Segments.ss) << 4) + sp]) << 8 +
+                memory[(registers.Get(Segments.ss) << 4) + sp + 1]);
+            registers.Set(Reg16.sp, (UInt16)(sp + 2));
+            return ret;
+        }
+
+        public void Push(Segments seg)
+        {
+            var value = registers.Get(seg);
+            ip++;
+        }
+
+        public void Pop(Segments seg)
+        {
+            var segment = PopValue16();
+            registers.Set(seg, segment);
+            ip++;
+        }
+
+        public Byte GetInDs(UInt16 offset)
+        {
+            return memory[(registers.Get(Segments.ds) << 4) + offset];
+        }
+        
+        public void SetInterruptHandler(Byte number, Action handler)
+        {
+            IntHandlers[number] = handler;
+        }
+
         public void Execute(int ipStart, int ipEnd)
         {
             ip = ipStart;
@@ -122,6 +168,12 @@ namespace x86il
             {
                 switch (memory[ip])
                 {
+                    case 0x0e:
+                        Push(Segments.cs);
+                        break;
+                    case 0x1f:
+                        Push(Segments.ds);
+                        break;
                     case 0x30:
                         Xor8();
                         break;
