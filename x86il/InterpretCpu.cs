@@ -20,7 +20,8 @@ namespace x86il
 
         private void ModRm(Func<UInt16, UInt16, UInt16> function, 
             RegisterType r1Type = RegisterType.reg8, 
-            RegisterType r2Type = RegisterType.reg8) 
+            RegisterType r2Type = RegisterType.reg8,
+            bool rmFirst = true) 
         {
             byte modrm = memory[ip + 1];
             switch (modrm >> 6)
@@ -37,9 +38,13 @@ namespace x86il
                 case 0x03:
                     var r1 = (UInt16)((modrm >> 3) & 7);
                     var r2 = (UInt16)((modrm) & 7);
-                    registers.Set(r1, 
-                        (byte)function(registers.Get(r1,r1Type), 
-                        registers.Get(r2,r2Type)),r1Type);
+
+                    var res = (byte)function(registers.Get(r1, r1Type),
+                        registers.Get(r2, r2Type));
+
+                    SetFlagsFromResult(res);
+
+                    registers.Set(rmFirst ? r1 : r2, res,  rmFirst ? r1Type : r2Type);
                     ip += 2;
                     break;
             }
@@ -103,17 +108,21 @@ namespace x86il
             }
         }
 
+        public void SetFlagsFromResult(UInt16 result)
+        {
+            if (result == 0)
+            {
+                flags |= Flags.Zero;
+            }
+            if (result < 0)
+            {
+                flags |= Flags.Carry;
+            }
+        }
+
         public void Xor8()
         {
-            ModRm((x, y) => {
-                var result = (UInt16)(x ^ y);
-                if(result == 0)
-                {
-                    flags |= Flags.Zero;
-                }
-
-                return result;
-            });                                     
+            ModRm((x, y) =>  (UInt16)(x ^ y));                                     
         }
 
         public void MovSegRM16()
@@ -161,6 +170,12 @@ namespace x86il
             IntHandlers[number] = handler;
         }
 
+        public void Add8ModRm()
+        {
+            ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg8, RegisterType.reg8, false);
+
+        }
+
         public void Execute(int ipStart, int ipEnd)
         {
             ip = ipStart;
@@ -168,6 +183,9 @@ namespace x86il
             {
                 switch (memory[ip])
                 {
+                    case 0x00:
+                        Add8ModRm();
+                        break;
                     case 0x0e:
                         Push(Segments.cs);
                         break;
