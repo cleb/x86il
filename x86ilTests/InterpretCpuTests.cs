@@ -54,5 +54,16 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(12, cpu.GetRegister(Reg8.ah));
         }
+        [TestMethod()]
+        public void ExecuteTestAddBxSiAl()
+        {
+            var memory = new Byte[] { 0x00,0x00,0x4 };
+            var cpu = new InterpretCpu(memory);
+            cpu.SetRegister(Reg8.al, 8);
+            cpu.SetRegister(Reg16.si, 1);
+            cpu.SetRegister(Reg16.bx, 1);
+            cpu.Execute(0, 2);
+            Assert.AreEqual(12, memory[2]);
+        }
     }
 }

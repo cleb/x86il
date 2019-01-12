@@ -18,16 +18,42 @@ namespace x86il
         byte[] memory;
         Dictionary<Byte, Action> IntHandlers;
 
+        private UInt16 getEffectiveAddress(UInt16 modrm)
+        {
+            switch (modrm & 7)
+            {
+                case 0x0:
+                    return (UInt16)(registers.Get(Reg16.bx) + registers.Get(Reg16.si));
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         private void ModRm(Func<UInt16, UInt16, UInt16> function, 
             RegisterType r1Type = RegisterType.reg8, 
             RegisterType r2Type = RegisterType.reg8,
             bool rmFirst = true) 
         {
             byte modrm = memory[ip + 1];
+            var r1 = (UInt16)((modrm >> 3) & 7);
             switch (modrm >> 6)
             {
                 case 0x00:
-                    throw new NotImplementedException();
+                    var address = getEffectiveAddress(modrm);
+                    var res = function(registers.Get(r1, r1Type), memory[address]); 
+                    if (r1Type == RegisterType.reg8)
+                    {
+                        memory[address] = (byte)res;
+                    } else
+                    {
+                        var low = res & 0xff;
+                        var high = res >> 8;
+                        memory[address] = (byte)low;
+                        memory[address + 1] = (byte)high;
+                    }
+
+                    ip += 2;
+                    
                     break;
                 case 0x01:
                     throw new NotImplementedException();
@@ -36,15 +62,14 @@ namespace x86il
                     throw new NotImplementedException();
                     break;
                 case 0x03:
-                    var r1 = (UInt16)((modrm >> 3) & 7);
                     var r2 = (UInt16)((modrm) & 7);
 
-                    var res = (byte)function(registers.Get(r1, r1Type),
+                    var result = (byte)function(registers.Get(r1, r1Type),
                         registers.Get(r2, r2Type));
 
-                    SetFlagsFromResult(res);
+                    SetFlagsFromResult(result);
 
-                    registers.Set(rmFirst ? r1 : r2, res,  rmFirst ? r1Type : r2Type);
+                    registers.Set(rmFirst ? r1 : r2, result,  rmFirst ? r1Type : r2Type);
                     ip += 2;
                     break;
             }
