@@ -88,17 +88,31 @@ namespace x86il
                 case 0x01:
                 case 0x02:
                     var address = getEffectiveAddressFromModRm(modrm);
-                    var res = function(registers.Get(r1, r1Type), memory[address]);
                     if (r1Type == RegisterType.reg8)
                     {
-                        memory[address] = (byte)res;
+                        var res8 = function(registers.Get(r1, r1Type), memory[address]);
+                        if (rmFirst)
+                        {
+                            registers.Set(r1,(byte)res8, r1Type);
+                        } else
+                        {
+                            memory[address] = (byte)res8;
+                        }
                     }
                     else
                     {
-                        var low = res & 0xff;
-                        var high = res >> 8;
-                        memory[address] = (byte)low;
-                        memory[address + 1] = (byte)high;
+                        var res16 = function(registers.Get(r1, r1Type), (UInt16)(((UInt16)memory[address + 1] << 8) + memory[address]));
+                        if (rmFirst)
+                        {
+                            registers.Set(r1, res16, r1Type);
+                        }
+                        else
+                        {
+                            var low = res16 & 0xff;
+                            var high = res16 >> 8;
+                            memory[address] = (byte)low;
+                            memory[address + 1] = (byte)high;
+                        }
                     }
                     break;
                 case 0x03:
@@ -235,10 +249,13 @@ namespace x86il
             IntHandlers[number] = handler;
         }
 
-        public void Add8ModRm()
+        public void Add8ModRm(bool rmFirst = false)
         {
-            ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg8, RegisterType.reg8, false);
-
+            ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg8, RegisterType.reg8, rmFirst);
+        }
+        public void Add16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
 
         public void Execute(int ipStart, int ipEnd)
@@ -250,6 +267,15 @@ namespace x86il
                 {
                     case 0x00:
                         Add8ModRm();
+                        break;
+                    case 0x01:
+                        Add16ModRm();
+                        break;
+                    case 0x02:
+                        Add8ModRm(true);
+                        break;
+                    case 0x03:
+                        Add16ModRm(true);
                         break;
                     case 0x0e:
                         Push(Segments.cs);
