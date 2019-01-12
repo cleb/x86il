@@ -65,5 +65,13 @@ namespace x86il.Tests
             cpu.Execute(0, 2);
             Assert.AreEqual(12, memory[2]);
         }
+        [TestMethod()]
+        public void ExecuteTestAddToImm()
+        {
+            var memory = new Byte[] { 0xB4, 0x04, 0x00, 0x26, 0x06, 0x00, 0x08 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 6);
+            Assert.AreEqual(12, memory[6]);
+        }
     }
 }

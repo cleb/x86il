@@ -24,8 +24,54 @@ namespace x86il
             {
                 case 0x0:
                     return (UInt16)(registers.Get(Reg16.bx) + registers.Get(Reg16.si));
+                case 0x1:
+                    return (UInt16)(registers.Get(Reg16.bx) + registers.Get(Reg16.di));
+                case 0x2:
+                    return (UInt16)(registers.Get(Reg16.bp) + registers.Get(Reg16.si));
+                case 0x3:
+                    return (UInt16)(registers.Get(Reg16.bp) + registers.Get(Reg16.di));
+                case 0x4:
+                    return registers.Get(Reg16.si);
+                case 0x5:
+                    return registers.Get(Reg16.di);
+                case 0x6:
+                    return registers.Get(Reg16.bp);
+                case 0x7:
+                    return registers.Get(Reg16.bx);
                 default:
                     throw new NotImplementedException();
+            }
+        }
+
+        private UInt16 getEffectiveAddressFromModRm(UInt16 modrm)
+        {
+            switch (modrm >> 6)
+            {
+                case 0x00:
+                    if((modrm & 7) == 0x6)
+                    {
+                        byte immLow = memory[ip + 2];
+                        UInt16 immHigh = memory[ip + 3];
+                        UInt16 imm16 = (UInt16)((immHigh << 8) + immLow);
+                        ip += 4;
+                        return imm16;
+                    } else
+                    {
+                        ip += 2;
+                        return getEffectiveAddress(modrm);
+                    }
+                case 0x01:
+                    byte displacement = memory[ip + 2];
+                    ip += 3;
+                    return (UInt16)(getEffectiveAddress(modrm) + displacement);
+                case 0x02:
+                    byte displacementLow = memory[ip + 2];
+                    UInt16 displacementHigh = memory[ip + 3];
+                    UInt16 disp16 = (UInt16)((displacementHigh << 8) + displacementLow);    
+                    ip += 4;
+                    return (UInt16)(getEffectiveAddress(modrm) + disp16);
+                default:
+                    throw new InvalidOperationException();
             }
         }
 
@@ -39,27 +85,21 @@ namespace x86il
             switch (modrm >> 6)
             {
                 case 0x00:
-                    var address = getEffectiveAddress(modrm);
-                    var res = function(registers.Get(r1, r1Type), memory[address]); 
+                case 0x01:
+                case 0x02:
+                    var address = getEffectiveAddressFromModRm(modrm);
+                    var res = function(registers.Get(r1, r1Type), memory[address]);
                     if (r1Type == RegisterType.reg8)
                     {
                         memory[address] = (byte)res;
-                    } else
+                    }
+                    else
                     {
                         var low = res & 0xff;
                         var high = res >> 8;
                         memory[address] = (byte)low;
                         memory[address + 1] = (byte)high;
                     }
-
-                    ip += 2;
-                    
-                    break;
-                case 0x01:
-                    throw new NotImplementedException();
-                    break;
-                case 0x02:
-                    throw new NotImplementedException();
                     break;
                 case 0x03:
                     var r2 = (UInt16)((modrm) & 7);
