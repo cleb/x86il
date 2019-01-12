@@ -75,6 +75,11 @@ namespace x86il
             }
         }
 
+        private UInt16 GetUInt16FromMemory(int address)
+        {
+            return (UInt16)(((UInt16)memory[address + 1] << 8) + memory[address]);
+        }
+
         private void ModRm(Func<UInt16, UInt16, UInt16> function, 
             RegisterType r1Type = RegisterType.reg8, 
             RegisterType r2Type = RegisterType.reg8,
@@ -101,7 +106,7 @@ namespace x86il
                     }
                     else
                     {
-                        var res16 = function(registers.Get(r1, r1Type), (UInt16)(((UInt16)memory[address + 1] << 8) + memory[address]));
+                        var res16 = function(registers.Get(r1, r1Type), GetUInt16FromMemory(address));
                         if (rmFirst)
                         {
                             registers.Set(r1, res16, r1Type);
@@ -170,7 +175,7 @@ namespace x86il
         }
         public void Mov16Imm(Reg16 register)
         {
-            registers.Set(register, (UInt16)((memory[ip + 2] << 8) | memory[ip + 1]));
+            registers.Set(register, GetUInt16FromMemory(ip + 1));
             ip += 3;
         }
 
@@ -257,6 +262,18 @@ namespace x86il
         {
             ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
+        public void AddImm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1]));
+            ip += 2;
+        }
+
+        public void Add16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (UInt16)(registers.Get(reg) + GetUInt16FromMemory(ip + 1)));
+            ip += 3;
+        }
+
 
         public void Execute(int ipStart, int ipEnd)
         {
@@ -276,6 +293,12 @@ namespace x86il
                         break;
                     case 0x03:
                         Add16ModRm(true);
+                        break;
+                    case 0x04:
+                        AddImm8(Reg8.al);
+                        break;
+                    case 0x05:
+                        Add16Imm16(Reg16.ax);
                         break;
                     case 0x0e:
                         Push(Segments.cs);
