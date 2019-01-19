@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryHelper.cs" />
     <Compile Include="DosCmd.cs" />
     <Compile Include="Emulator.cs" />
     <Compile Include="Flags.cs" />

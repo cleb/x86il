@@ -50,9 +50,7 @@ namespace x86il
                 case 0x00:
                     if((modrm & 7) == 0x6)
                     {
-                        byte immLow = memory[ip + 2];
-                        UInt16 immHigh = memory[ip + 3];
-                        UInt16 imm16 = (UInt16)((immHigh << 8) + immLow);
+                        var imm16 = BinaryHelper.Read16Bit(memory, ip + 2);
                         ip += 4;
                         return imm16;
                     } else
@@ -65,9 +63,7 @@ namespace x86il
                     ip += 3;
                     return (UInt16)(getEffectiveAddress(modrm) + displacement);
                 case 0x02:
-                    byte displacementLow = memory[ip + 2];
-                    UInt16 displacementHigh = memory[ip + 3];
-                    UInt16 disp16 = (UInt16)((displacementHigh << 8) + displacementLow);    
+                    var disp16 = BinaryHelper.Read16Bit(memory, ip + 2); ;    
                     ip += 4;
                     return (UInt16)(getEffectiveAddress(modrm) + disp16);
                 default:
@@ -77,7 +73,7 @@ namespace x86il
 
         private UInt16 GetUInt16FromMemory(int address)
         {
-            return (UInt16)(((UInt16)memory[address + 1] << 8) + memory[address]);
+            return BinaryHelper.Read16Bit(memory, address);
         }
 
         private void ModRm(Func<UInt16, UInt16, UInt16> function, 
@@ -217,16 +213,14 @@ namespace x86il
         public void PushValue(UInt16 Value)
         {
             var sp = registers.Get(Reg16.sp);
-            memory[(registers.Get(Segments.ss) << 4) + sp - 1] = (Byte)(Value & 0xff);
-            memory[(registers.Get(Segments.ss) << 4) + sp] = (Byte)((Value >> 8) & 0xff);
+            BinaryHelper.Write16Bit(memory, (registers.Get(Segments.ss) << 4) + sp - 1, Value);
             registers.Set(Reg16.sp, (UInt16)(sp - 2));
         }
 
         public UInt16 PopValue16()
         {
             var sp = registers.Get(Reg16.sp);
-            var ret = (UInt16)((UInt16)((memory[(registers.Get(Segments.ss) << 4) + sp + 2]) << 8) +
-                memory[(registers.Get(Segments.ss) << 4) + sp + 1]);
+            var ret = BinaryHelper.Read16Bit(memory, (registers.Get(Segments.ss) << 4) + sp + 1);
             registers.Set(Reg16.sp, (UInt16)(sp + 2));
             return ret;
         }
@@ -272,6 +266,10 @@ namespace x86il
         {
             ModRm((r1, r2) => (UInt16)(r1 | r2), RegisterType.reg8, RegisterType.reg8, rmFirst);
         }
+        public void Or16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r1 | r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
+        }
 
         public void Add16Imm16(Reg16 reg)
         {
@@ -313,6 +311,9 @@ namespace x86il
                         break;
                     case 0x08:
                         Or8ModRm();
+                        break;
+                    case 0x09:
+                        Or16ModRm();
                         break;
                     case 0x0e:
                         Push(Segments.cs);

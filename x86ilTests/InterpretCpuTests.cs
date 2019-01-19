@@ -123,5 +123,13 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(0x3f, memory[6]);
         }
+        [TestMethod()]
+        public void ExecuteTestOrMem16()
+        {
+            var memory = new Byte[] { 0xBB, 0xCF, 0x12, 0x09, 0x1E, 0x07, 0x00, 0x57, 0x06 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 6);
+            Assert.AreEqual(0x16df, BinaryHelper.Read16Bit(memory,7));
+        }
     }
 }
