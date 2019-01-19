@@ -115,5 +115,13 @@ namespace x86il.Tests
             cpu.Execute(0, 7);
             Assert.AreEqual(42, cpu.GetRegister(Segments.ds));
         }
+        [TestMethod()]
+        public void ExecuteTestOrMem8()
+        {
+            var memory = new Byte[] { 0xB3, 0x17, 0x08, 0x1E, 0x06, 0x00, 0x2A };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 5);
+            Assert.AreEqual(0x3f, memory[6]);
+        }
     }
 }

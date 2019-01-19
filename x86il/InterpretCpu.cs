@@ -268,6 +268,10 @@ namespace x86il
             registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1]));
             ip += 2;
         }
+        public void Or8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r1 | r2), RegisterType.reg8, RegisterType.reg8, rmFirst);
+        }
 
         public void Add16Imm16(Reg16 reg)
         {
@@ -303,6 +307,12 @@ namespace x86il
                         break;
                     case 0x06:
                         Push(Segments.es);
+                        break;
+                    case 0x07:
+                        Pop(Segments.es);
+                        break;
+                    case 0x08:
+                        Or8ModRm();
                         break;
                     case 0x0e:
                         Push(Segments.cs);
