@@ -106,5 +106,14 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(6438, cpu.GetRegister(Reg16.ax));
         }
+        [TestMethod()]
+        public void ExecuteTestPushEs()
+        {
+            var memory = new Byte[] { 0xB8, 0x2A, 0x00, 0x8E, 0xC0, 0x06, 0x1F,0x00,0x00 };
+            var cpu = new InterpretCpu(memory);
+            cpu.SetRegister(Reg16.sp, 8);
+            cpu.Execute(0, 7);
+            Assert.AreEqual(42, cpu.GetRegister(Segments.ds));
+        }
     }
 }

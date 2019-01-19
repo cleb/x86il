@@ -217,15 +217,15 @@ namespace x86il
         public void PushValue(UInt16 Value)
         {
             var sp = registers.Get(Reg16.sp);
-            memory[(registers.Get(Segments.ss) << 4) + sp] = (Byte)(Value & 0xff);
-            memory[(registers.Get(Segments.ss) << 4) + sp + 1] = (Byte)(Value >> 8 & 0xff);
+            memory[(registers.Get(Segments.ss) << 4) + sp - 1] = (Byte)(Value & 0xff);
+            memory[(registers.Get(Segments.ss) << 4) + sp] = (Byte)((Value >> 8) & 0xff);
             registers.Set(Reg16.sp, (UInt16)(sp - 2));
         }
 
         public UInt16 PopValue16()
         {
             var sp = registers.Get(Reg16.sp);
-            var ret = (UInt16)((UInt16)(memory[(registers.Get(Segments.ss) << 4) + sp]) << 8 +
+            var ret = (UInt16)((UInt16)((memory[(registers.Get(Segments.ss) << 4) + sp + 2]) << 8) +
                 memory[(registers.Get(Segments.ss) << 4) + sp + 1]);
             registers.Set(Reg16.sp, (UInt16)(sp + 2));
             return ret;
@@ -234,6 +234,7 @@ namespace x86il
         public void Push(Segments seg)
         {
             var value = registers.Get(seg);
+            PushValue(value);
             ip++;
         }
 
@@ -300,11 +301,14 @@ namespace x86il
                     case 0x05:
                         Add16Imm16(Reg16.ax);
                         break;
+                    case 0x06:
+                        Push(Segments.es);
+                        break;
                     case 0x0e:
                         Push(Segments.cs);
                         break;
                     case 0x1f:
-                        Push(Segments.ds);
+                        Pop(Segments.ds);
                         break;
                     case 0x30:
                         Xor8();
