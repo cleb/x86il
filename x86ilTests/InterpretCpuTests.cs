@@ -131,5 +131,13 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(0x16df, BinaryHelper.Read16Bit(memory,7));
         }
+        [TestMethod()]
+        public void ExecuteTestOrAlImm8()
+        {
+            var memory = new Byte[] { 0xB0, 0x17, 0x0C, 0x2A };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 3);
+            Assert.AreEqual(0x3f, cpu.GetRegister(Reg8.al));
+        }
     }
 }
