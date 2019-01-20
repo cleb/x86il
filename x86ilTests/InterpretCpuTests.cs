@@ -147,5 +147,13 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(0xdee, cpu.GetRegister(Reg16.ax));
         }
+        [TestMethod()]
+        public void ExecuteTestAdc()
+        {
+            var memory = new Byte[] { 0xB4, 0x04, 0xB7, 0xFF, 0x00, 0xFC, 0xB3, 0x04, 0xB0, 0x08, 0x10, 0xC3 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 11);
+            Assert.AreEqual(13, cpu.GetRegister(Reg8.bl));
+        }
     }
 }

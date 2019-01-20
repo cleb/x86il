@@ -119,10 +119,10 @@ namespace x86il
                 case 0x03:
                     var r2 = (UInt16)((modrm) & 7);
 
-                    var result = (byte)function(registers.Get(r1, r1Type),
+                    var result = function(registers.Get(r1, r1Type),
                         registers.Get(r2, r2Type));
 
-                    SetFlagsFromResult(result);
+                    SetFlagsFromResult((Int16)result, r1Type == RegisterType.reg8 ? 1 : 2);
 
                     registers.Set(rmFirst ? r1 : r2, result,  rmFirst ? r1Type : r2Type);
                     ip += 2;
@@ -188,17 +188,18 @@ namespace x86il
             }
         }
 
-        public void SetFlagsFromResult(UInt16 result)
+        public void SetFlagsFromResult(Int16 result, int bits = 1)
         {
             if (result == 0)
             {
                 flags |= Flags.Zero;
             }
-            if (result < 0)
+            if (result >= (bits << 8) || result < 0)
             {
                 flags |= Flags.Carry;
             }
         }
+            
 
         public void Xor8()
         {
@@ -286,6 +287,10 @@ namespace x86il
             registers.Set(reg, (UInt16)(registers.Get(reg) + GetUInt16FromMemory(ip + 1)));
             ip += 3;
         }
+        public void Adc8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r1 + r2 + (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, rmFirst);
+        }
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -339,6 +344,9 @@ namespace x86il
                         break;
                     case 0x0e:
                         Push(Segments.cs);
+                        break;
+                    case 0x10:
+                        Adc8ModRm();
                         break;
                     case 0x1f:
                         Pop(Segments.ds);
