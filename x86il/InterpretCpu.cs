@@ -73,7 +73,7 @@ namespace x86il
             return BinaryHelper.Read16Bit(memory, address);
         }
 
-        private void ModRm(Func<UInt16, UInt16, UInt16> function, 
+        private void ModRm(Func<UInt16, UInt16, UInt32> function, 
             RegisterType r1Type = RegisterType.reg8, 
             RegisterType r2Type = RegisterType.reg8,
             bool rmFirst = true) 
@@ -102,7 +102,7 @@ namespace x86il
                         var res16 = function(registers.Get(r1, r1Type), GetUInt16FromMemory(address));
                         if (rmFirst)
                         {
-                            registers.Set(r1, res16, r1Type);
+                            registers.Set(r1, (UInt16) res16, r1Type);
                         }
                         else
                         {
@@ -119,9 +119,9 @@ namespace x86il
                     var result = function(registers.Get(r1, r1Type),
                         registers.Get(r2, r2Type));
 
-                    SetFlagsFromResult((Int16)result, r1Type == RegisterType.reg8 ? 1 : 2);
+                    SetFlagsFromResult((Int32)result, r1Type == RegisterType.reg8 ? 1 : 2);
 
-                    registers.Set(rmFirst ? r1 : r2, result,  rmFirst ? r1Type : r2Type);
+                    registers.Set(rmFirst ? r1 : r2, (UInt16)result,  rmFirst ? r1Type : r2Type);
                     ip += 2;
                     break;
             }
@@ -185,7 +185,7 @@ namespace x86il
             }
         }
 
-        public void SetFlagsFromResult(Int16 result, int bits = 1)
+        public void SetFlagsFromResult(Int32 result, int bits = 1)
         {
             if (result == 0)
             {
@@ -253,7 +253,7 @@ namespace x86il
         }
         public void Add16ModRm(bool rmFirst = false)
         {
-            ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
+            ModRm((r1, r2) => (UInt32)(r1 + r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
         public void AddImm8(Reg8 reg)
         {
@@ -287,6 +287,10 @@ namespace x86il
         public void Adc8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (UInt16)(r1 + r2 + (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, rmFirst);
+        }
+        public void Adc16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt32)(r1 + r2 + (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
 
 
@@ -344,6 +348,9 @@ namespace x86il
                         break;
                     case 0x10:
                         Adc8ModRm();
+                        break;
+                    case 0x11:
+                        Adc16ModRm();
                         break;
                     case 0x1f:
                         Pop(Segments.ds);
