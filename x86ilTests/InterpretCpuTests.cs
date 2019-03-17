@@ -1,17 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using x86il;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using NUnit.Framework;
 
 namespace x86il.Tests
 {
-    [TestClass()]
+    [TestFixture]
     public class InterpretCpuTests
     {
-        [TestMethod()]
+        [Test]
         public void ExecuteTest()
         {
             var memory = new Byte[] { 0xb4, 0x04 };
@@ -20,7 +15,7 @@ namespace x86il.Tests
             Assert.AreEqual(4, cpu.GetRegister(Reg8.ah));
         }
 
-        [TestMethod()]
+        [Test]
         public void ExecuteTestXor()
         {
             var memory = new Byte[] { 0xb0, 0x04, 0x30, 0xc0 };
@@ -30,7 +25,7 @@ namespace x86il.Tests
             cpu.Execute(2, 3);
             Assert.AreEqual(0, cpu.GetRegister(Reg8.al));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestMov16()
         {
             var memory = new Byte[] { 0xbb, 0x42, 0x00 };
@@ -38,7 +33,7 @@ namespace x86il.Tests
             cpu.Execute(0, 2);
             Assert.AreEqual(0x42, cpu.GetRegister(Reg16.bx));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestMovEsAx()
         {
             var memory = new Byte[] { 0xb8, 0x42, 0x00, 0x8e, 0xc0 };
@@ -46,7 +41,7 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(0x42, cpu.GetRegister(Segments.es));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddAhAl()
         {
             var memory = new Byte[] { 0xB4, 0x04, 0xB0, 0x08, 0x00, 0xC4 };
@@ -54,7 +49,7 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(12, cpu.GetRegister(Reg8.ah));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddBxSiAl()
         {
             var memory = new Byte[] { 0x00,0x00,0x4 };
@@ -65,7 +60,7 @@ namespace x86il.Tests
             cpu.Execute(0, 2);
             Assert.AreEqual(12, memory[2]);
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddToImm()
         {
             var memory = new Byte[] { 0xB4, 0x04, 0x00, 0x26, 0x06, 0x00, 0x08 };
@@ -73,7 +68,7 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(12, memory[6]);
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddAlImmAddr8()
         {
             var memory = new Byte[] { 0xB0, 0x04, 0x02, 0x06, 0x06, 0x00, 0x08 };
@@ -81,7 +76,7 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(12, cpu.GetRegister(Reg8.al));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddAxImmAddr16()
         {
             
@@ -90,7 +85,7 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(6438, cpu.GetRegister(Reg16.ax));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddAlImm8()
         {
             var memory = new Byte[] { 0xB0, 0x04, 0x04, 0x08 };
@@ -98,7 +93,7 @@ namespace x86il.Tests
             cpu.Execute(0, 3);
             Assert.AreEqual(12, cpu.GetRegister(Reg8.al));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAddAxImm16()
         {
             var memory = new Byte[] { 0xB8, 0xCF, 0x12, 0x05, 0x57, 0x06 };
@@ -106,7 +101,7 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(6438, cpu.GetRegister(Reg16.ax));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestPushEs()
         {
             var memory = new Byte[] { 0xB8, 0x2A, 0x00, 0x8E, 0xC0, 0x06, 0x1F,0x00,0x00 };
@@ -115,7 +110,7 @@ namespace x86il.Tests
             cpu.Execute(0, 7);
             Assert.AreEqual(42, cpu.GetRegister(Segments.ds));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestOrMem8()
         {
             var memory = new Byte[] { 0xB3, 0x17, 0x08, 0x1E, 0x06, 0x00, 0x2A };
@@ -123,7 +118,7 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(0x3f, memory[6]);
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestOrMem16()
         {
             var memory = new Byte[] { 0xBB, 0xCF, 0x12, 0x09, 0x1E, 0x07, 0x00, 0x57, 0x06 };
@@ -131,7 +126,7 @@ namespace x86il.Tests
             cpu.Execute(0, 6);
             Assert.AreEqual(0x16df, BinaryHelper.Read16Bit(memory,7));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestOrAlImm8()
         {
             var memory = new Byte[] { 0xB0, 0x17, 0x0C, 0x2A };
@@ -139,7 +134,7 @@ namespace x86il.Tests
             cpu.Execute(0, 3);
             Assert.AreEqual(0x3f, cpu.GetRegister(Reg8.al));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestOrAxImm16()
         {
             var memory = new Byte[] { 0xB8, 0xEC, 0x05, 0x0D, 0x26, 0x09 };
@@ -147,7 +142,7 @@ namespace x86il.Tests
             cpu.Execute(0, 5);
             Assert.AreEqual(0xdee, cpu.GetRegister(Reg16.ax));
         }
-        [TestMethod()]
+        [Test]
         public void ExecuteTestAdc()
         {
             var memory = new Byte[] { 0xB4, 0x04, 0xB7, 0xFF, 0x00, 0xFC, 0xB3, 0x04, 0xB0, 0x08, 0x10, 0xC3 };

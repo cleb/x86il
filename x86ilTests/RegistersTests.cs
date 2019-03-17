@@ -1,17 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using x86il;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NUnit.Framework;
 
 namespace x86il.Tests
 {
-    [TestClass()]
+    [TestFixture]
     public class RegistersTests
     {
-        [TestMethod()]
+        [Test]
         public void GetSetAlTest()
         {
             var registers = new Registers();
@@ -19,7 +13,7 @@ namespace x86il.Tests
             Assert.AreEqual(4, registers.Get(Reg8.al));
         }
 
-        [TestMethod()]
+        [Test]
         public void GetSetAhTest()
         {
             var registers = new Registers();
@@ -27,7 +21,7 @@ namespace x86il.Tests
             Assert.AreEqual(8, registers.Get(Reg8.ah));
         }
 
-        [TestMethod()]
+        [Test]
         public void GetSetBlBhTest()
         {
             var registers = new Registers();
@@ -37,7 +31,7 @@ namespace x86il.Tests
             Assert.AreEqual(16, registers.Get(Reg8.bh));
         }
 
-        [TestMethod()]
+        [Test]
         public void GetSetClChCxTest()
         {
             var registers = new Registers();
