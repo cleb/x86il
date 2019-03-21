@@ -352,6 +352,12 @@ namespace x86il
                     case 0x11:
                         Adc16ModRm();
                         break;
+                    case 0x12:
+                        Adc8ModRm(true);
+                        break;
+                    case 0x13:
+                        Adc16ModRm(true);
+                        break;
                     case 0x1f:
                         Pop(Segments.ds);
                         break;
