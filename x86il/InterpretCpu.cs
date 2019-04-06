@@ -375,6 +375,9 @@ namespace x86il
                         Adc16Imm16(Reg16.ax);
                         break;
                     case 0x16:
+                        Push(Segments.ss);
+                        break;
+                    case 0x17:
                         Pop(Segments.ss);
                         break;
                     case 0x1f:
