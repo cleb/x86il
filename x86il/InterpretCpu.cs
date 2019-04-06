@@ -292,6 +292,11 @@ namespace x86il
         {
             ModRm((r1, r2) => (UInt32)(r1 + r2 + (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
+        public void Adc8Imm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1] + (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            ip += 2;
+        }
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -357,6 +362,9 @@ namespace x86il
                         break;
                     case 0x13:
                         Adc16ModRm(true);
+                        break;
+                    case 0x14:
+                        Adc8Imm8(Reg8.al);
                         break;
                     case 0x1f:
                         Pop(Segments.ds);

@@ -158,12 +158,21 @@ namespace x86il.Tests
             cpu.Execute(0, 0x10);
             Assert.AreEqual(13, cpu.GetRegister(Reg8.bl));
         }
+        [Test]
         public void ExecuteTestAdcr8rm8()
         {
             var memory = new Byte[] { 0xB4, 0x04, 0xB7, 0xFF, 0x00, 0xFC, 0xB3, 0x04, 0x12, 0x1E, 0x0C, 0x00, 0x08 };
             var cpu = new InterpretCpu(memory);
             cpu.Execute(0, 11);
             Assert.AreEqual(13, cpu.GetRegister(Reg8.bl));
+        }
+        [Test]
+        public void ExecuteTestAdc8Imm8()
+        {
+            var memory = new Byte[] { 0xB4, 0x04, 0xB7, 0xFF, 0x00, 0xFC, 0xB0, 0x04, 0x14, 0x08 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 9);
+            Assert.AreEqual(13, cpu.GetRegister(Reg8.al));
         }
     }
 }
