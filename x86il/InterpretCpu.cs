@@ -297,6 +297,11 @@ namespace x86il
             registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1] + (flags.HasFlag(Flags.Carry) ? 1 : 0)));
             ip += 2;
         }
+        public void Adc16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (UInt16)(registers.Get(reg) + BinaryHelper.Read16Bit(memory, ip + 1) + (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            ip += 3;
+        }
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -365,6 +370,9 @@ namespace x86il
                         break;
                     case 0x14:
                         Adc8Imm8(Reg8.al);
+                        break;
+                    case 0x15:
+                        Adc16Imm16(Reg16.ax);
                         break;
                     case 0x1f:
                         Pop(Segments.ds);
