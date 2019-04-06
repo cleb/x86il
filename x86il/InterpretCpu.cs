@@ -374,6 +374,9 @@ namespace x86il
                     case 0x15:
                         Adc16Imm16(Reg16.ax);
                         break;
+                    case 0x16:
+                        Pop(Segments.ss);
+                        break;
                     case 0x1f:
                         Pop(Segments.ds);
                         break;
