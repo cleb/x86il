@@ -310,6 +310,16 @@ namespace x86il
         {
             ModRm((r1, r2) => (UInt32)(r2 - r1 - (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
+        public void Sbb8Imm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte)(registers.Get(reg) - memory[ip + 1] - (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            ip += 2;
+        }
+        public void Sbb16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1) - (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            ip += 3;
+        }
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -399,6 +409,12 @@ namespace x86il
                         break;
                     case 0x1B:
                         Sbb16ModRm(true);
+                        break;
+                    case 0x1c:
+                        Sbb8Imm8(Reg8.al);
+                        break;
+                    case 0x1d:
+                        Sbb16Imm16(Reg16.ax);
                         break;
                     case 0x1f:
                         Pop(Segments.ds);

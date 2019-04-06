@@ -198,5 +198,21 @@ namespace x86il.Tests
             cpu.Execute(0, 13);
             Assert.AreEqual(1467, cpu.GetRegister(Reg16.bx));
         }
+        [Test]
+        public void ExecuteTestSbb8Imm8()
+        {
+            var memory = new Byte[] { 0xB4, 0x04, 0xB7, 0xFF, 0x00, 0xFC, 0xB0, 0x08, 0x1C, 0x04 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 9);
+            Assert.AreEqual(3, cpu.GetRegister(Reg8.al));
+        }
+        [Test]
+        public void ExecuteTestSbb16Imm16()
+        {
+            var memory = new Byte[] { 0xB4, 0x04, 0xB7, 0xFF, 0x00, 0xFC, 0xB8, 0xCF, 0x12, 0x1D, 0x57, 0x06 };
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, 11);
+            Assert.AreEqual(3191, cpu.GetRegister(Reg16.ax));
+        }
     }
 }
