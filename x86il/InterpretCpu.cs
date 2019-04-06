@@ -394,6 +394,12 @@ namespace x86il
                     case 0x19:
                         Sbb16ModRm(false);
                         break;
+                    case 0x1A:
+                        Sbb8ModRm(true);
+                        break;
+                    case 0x1B:
+                        Sbb16ModRm(true);
+                        break;
                     case 0x1f:
                         Pop(Segments.ds);
                         break;
