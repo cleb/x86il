@@ -416,6 +416,9 @@ namespace x86il
                     case 0x1d:
                         Sbb16Imm16(Reg16.ax);
                         break;
+                    case 0x1e:
+                        Push(Segments.ds);
+                        break;
                     case 0x1f:
                         Pop(Segments.ds);
                         break;
