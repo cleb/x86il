@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using NUnit.Framework;
 
 namespace x86il.Tests
@@ -6,6 +7,15 @@ namespace x86il.Tests
     [TestFixture]
     public class InterpretCpuTests
     {
+        private InterpretCpu RunAsmTest(string filename)
+        {
+            var filePath = TestContext.CurrentContext.TestDirectory + $"../../../TestAsm/{filename}";
+            System.Diagnostics.Process.Start("nasm", $"{filePath}.asm -o {filePath}.o");
+            var memory = File.ReadAllBytes($"{filePath}.o");
+            var cpu = new InterpretCpu(memory);
+            cpu.Execute(0, memory.Length);
+            return cpu;
+        }
         [Test]
         public void ExecuteTest()
         {
@@ -213,6 +223,18 @@ namespace x86il.Tests
             var cpu = new InterpretCpu(memory);
             cpu.Execute(0, 11);
             Assert.AreEqual(3191, cpu.GetRegister(Reg16.ax));
+        }
+        [Test]
+        public void ExecuteTestAnd8Madrm8()
+        {
+            var cpu = RunAsmTest("And8Rm8");
+            Assert.AreEqual(2, cpu.GetRegister(Reg8.bl));
+        }
+        [Test]
+        public void ExecuteTestAnd16Mrm16()
+        {
+            var cpu = RunAsmTest("And16Rm16");
+            Assert.AreEqual(583, cpu.GetRegister(Reg16.bx));
         }
     }
 }

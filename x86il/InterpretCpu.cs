@@ -320,6 +320,24 @@ namespace x86il
             registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1) - (flags.HasFlag(Flags.Carry) ? 1 : 0)));
             ip += 3;
         }
+        public void AndImm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte)(registers.Get(reg) & memory[ip + 1]));
+            ip += 2;
+        }
+        public void AndImm16(Reg16 reg)
+        {
+            registers.Set(reg, (UInt16)(registers.Get(reg) & BinaryHelper.Read16Bit(memory, ip + 1)));
+            ip += 2;
+        }
+        public void And8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r1 & r2), RegisterType.reg8, RegisterType.reg8, rmFirst);
+        }
+        public void And16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r1 & r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
+        }
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -421,6 +439,24 @@ namespace x86il
                         break;
                     case 0x1f:
                         Pop(Segments.ds);
+                        break;
+                    case 0x20:
+                        And8ModRm();
+                        break;
+                    case 0x21:
+                        And16ModRm();
+                        break;
+                    case 0x22:
+                        And8ModRm(true);
+                        break;
+                    case 0x23:
+                        And16ModRm(true);
+                        break;
+                    case 0x24:
+                        AndImm8(Reg8.al);
+                        break;
+                    case 0x25:
+                        AndImm16(Reg16.ax);
                         break;
                     case 0x30:
                         Xor8();
