@@ -10,7 +10,11 @@ namespace x86il.Tests
         private InterpretCpu RunAsmTest(string filename)
         {
             var filePath = TestContext.CurrentContext.TestDirectory + $"../../../TestAsm/{filename}";
-            System.Diagnostics.Process.Start("nasm", $"{filePath}.asm -o {filePath}.o");
+            if(!File.Exists($"{filePath}.o"))
+            {
+                var compile = System.Diagnostics.Process.Start("nasm", $"{filePath}.asm -o {filePath}.o");
+                compile.WaitForExit();
+            }
             var memory = File.ReadAllBytes($"{filePath}.o");
             var cpu = new InterpretCpu(memory);
             cpu.Execute(0, memory.Length);
@@ -235,6 +239,12 @@ namespace x86il.Tests
         {
             var cpu = RunAsmTest("And16Rm16");
             Assert.AreEqual(583, cpu.GetRegister(Reg16.bx));
+        }
+        [Test]
+        public void ExecuteTestAnd8Imm8()
+        {
+            var cpu = RunAsmTest("And8Imm8");
+            Assert.AreEqual(2, cpu.GetRegister(Reg8.al));
         }
     }
 }
