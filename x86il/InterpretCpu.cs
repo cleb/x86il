@@ -328,7 +328,7 @@ namespace x86il
         public void AndImm16(Reg16 reg)
         {
             registers.Set(reg, (UInt16)(registers.Get(reg) & BinaryHelper.Read16Bit(memory, ip + 1)));
-            ip += 2;
+            ip += 3;
         }
         public void And8ModRm(bool rmFirst = false)
         {
