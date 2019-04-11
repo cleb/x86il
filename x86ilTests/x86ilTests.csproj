@@ -91,6 +91,10 @@
     <Content Include="TestAsm\OrMemBl.asm" />
     <Content Include="TestAsm\OrMemBx.asm" />
     <Content Include="TestAsm\PushEs.asm" />
+    <Content Include="TestAsm\Sub8Rm8.asm" />
+    <Content Include="TestAsm\Sub8Imm8.asm" />
+    <Content Include="TestAsm\Sub16Rm16.asm" />
+    <Content Include="TestAsm\Sub16Imm16.asm" />
     <Content Include="TestAsm\Sbb16Imm16.asm" />
     <Content Include="TestAsm\Sbb16Rm16.asm" />
     <Content Include="TestAsm\Sbb8Imm8.asm" />

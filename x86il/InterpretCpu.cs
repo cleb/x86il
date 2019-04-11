@@ -338,6 +338,24 @@ namespace x86il
         {
             ModRm((r1, r2) => (UInt16)(r1 & r2), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
+        public void Sub8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg8, RegisterType.reg8, rmFirst);
+        }
+        public void Sub16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (UInt32)(r2 - r1), RegisterType.reg16, RegisterType.reg16, rmFirst);
+        }
+        public void Sub8Imm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte)(registers.Get(reg) - memory[ip + 1]));
+            ip += 2;
+        }
+        public void Sub16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1)));
+            ip += 3;
+        }
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -457,6 +475,24 @@ namespace x86il
                         break;
                     case 0x25:
                         AndImm16(Reg16.ax);
+                        break;
+                    case 0x28:
+                        Sub8ModRm(false);
+                        break;
+                    case 0x29:
+                        Sub16ModRm(false);
+                        break;
+                    case 0x2A:
+                        Sub8ModRm(true);
+                        break;
+                    case 0x2B:
+                        Sub16ModRm(true);
+                        break;
+                    case 0x2c:
+                        Sub8Imm8(Reg8.al);
+                        break;
+                    case 0x2d:
+                        Sub16Imm16(Reg16.ax);
                         break;
                     case 0x30:
                         Xor8();

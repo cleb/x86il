@@ -246,5 +246,29 @@ namespace x86il.Tests
             var cpu = RunAsmTest("And8Imm8");
             Assert.AreEqual(2, cpu.GetRegister(Reg8.al));
         }
+        [Test]
+        public void ExecuteTestSub8Modrm8()
+        {
+            var cpu = RunAsmTest("Sub8Rm8");
+            Assert.AreEqual(4, cpu.GetRegister(Reg8.bl));
+        }
+        [Test]
+        public void ExecuteTestSub16Rm16()
+        {
+            var cpu = RunAsmTest("Sub16Rm16");
+            Assert.AreEqual(1468, cpu.GetRegister(Reg16.bx));
+        }
+        [Test]
+        public void ExecuteTestSub8Imm8()
+        {
+            var cpu = RunAsmTest("Sub8Imm8");
+            Assert.AreEqual(4, cpu.GetRegister(Reg8.al));
+        }
+        [Test]
+        public void ExecuteTestSub16Imm16()
+        {
+            var cpu = RunAsmTest("Sub16Imm16");
+            Assert.AreEqual(3192, cpu.GetRegister(Reg16.ax));
+        }
     }
 }
