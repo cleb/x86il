@@ -70,37 +70,108 @@
   <ItemGroup>
     <Content Include="TestAsm\Adc.asm">
       <Generator>nasm</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TestAsm\Adc16Imm16.asm">
       <Generator>nasm Adc16Imm16.asm -o Adc16Imm16.o</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TestAsm\Adc8Imm8.asm" />
-    <Content Include="TestAsm\Adcr8rm8.asm" />
-    <Content Include="TestAsm\AddAhAl.asm" />
-    <Content Include="TestAsm\AddAl8.asm" />
-    <Content Include="TestAsm\AddAlImm8.asm" />
-    <Content Include="TestAsm\AddAxImm16.asm" />
-    <Content Include="TestAsm\AddToImm.asm" />
-    <Content Include="TestAsm\int10h.asm" />
-    <Content Include="TestAsm\MovAh4.asm" />
-    <Content Include="TestAsm\MovBx0x42.asm" />
-    <Content Include="TestAsm\movEs42.asm" />
-    <Content Include="TestAsm\MovEsAx.asm" />
-    <Content Include="TestAsm\OrAlImm8.asm" />
-    <Content Include="TestAsm\OrAxImm16.asm" />
-    <Content Include="TestAsm\OrMemBl.asm" />
-    <Content Include="TestAsm\OrMemBx.asm" />
-    <Content Include="TestAsm\PushEs.asm" />
-    <Content Include="TestAsm\Sub8Rm8.asm" />
-    <Content Include="TestAsm\Sub8Imm8.asm" />
-    <Content Include="TestAsm\Sub16Rm16.asm" />
-    <Content Include="TestAsm\Sub16Imm16.asm" />
-    <Content Include="TestAsm\Sbb16Imm16.asm" />
-    <Content Include="TestAsm\Sbb16Rm16.asm" />
-    <Content Include="TestAsm\Sbb8Imm8.asm" />
-    <Content Include="TestAsm\Sbb8Rm8.asm" />
-    <Content Include="TestAsm\XorAlAl.asm" />
-    <Content Include="TestAsm\zeroes2.asm" />
+    <Content Include="TestAsm\Adc8Imm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Adcr8rm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\AddAhAl.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\AddAl8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\AddAlImm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\AddAxImm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\AddToImm.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\And16Imm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\And16Rm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\And8Imm.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\And8Imm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\And8Rm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\int10h.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\MovAh4.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\MovBx0x42.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\movEs42.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\MovEsAx.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\OrAlImm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\OrAxImm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\OrMemBl.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\OrMemBx.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\PushEs.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sub8Rm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sub8Imm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sub16Rm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sub16Imm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sbb16Imm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sbb16Rm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sbb8Imm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Sbb8Rm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\XorAlAl.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\zeroes2.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

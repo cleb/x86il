@@ -9,7 +9,8 @@ namespace x86il.Tests
     {
         private InterpretCpu RunAsmTest(string filename)
         {
-            var filePath = TestContext.CurrentContext.TestDirectory + $"../../../TestAsm/{filename}";
+            var filePath = TestContext.CurrentContext.TestDirectory + $"/TestAsm/{filename}";
+            
             if(!File.Exists($"{filePath}.o"))
             {
                 var compile = System.Diagnostics.Process.Start("nasm", $"{filePath}.asm -o {filePath}.o");
