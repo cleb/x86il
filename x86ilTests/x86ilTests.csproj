@@ -100,6 +100,9 @@
     <Content Include="TestAsm\And16Imm16.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestAsm\Xor16Rm16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\And16Rm16.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

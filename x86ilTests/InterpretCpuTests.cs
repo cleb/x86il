@@ -277,5 +277,11 @@ namespace x86il.Tests
             var cpu = RunAsmTest("Sub16Imm16");
             Assert.AreEqual(3192, cpu.GetRegister(Reg16.ax));
         }
+        [Test]
+        public void ExecuteTestXor16Rm16()
+        {
+            var cpu = RunAsmTest("Xor16Rm16");
+            Assert.AreEqual(5272, cpu.GetRegister(Reg16.ax));
+        }
     }
 }

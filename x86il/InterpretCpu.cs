@@ -198,9 +198,14 @@ namespace x86il
         }
             
 
-        public void Xor8()
+        public void XorRm8()
         {
             ModRm((x, y) =>  (UInt16)(x ^ y));                                     
+        }
+
+        public void XorRm16()
+        {
+            ModRm((x, y) => (UInt32)(x ^ y),RegisterType.reg16,RegisterType.reg16);
         }
 
         public void MovSegRM16()
@@ -495,7 +500,10 @@ namespace x86il
                         Sub16Imm16(Reg16.ax);
                         break;
                     case 0x30:
-                        Xor8();
+                        XorRm8();
+                        break;
+                    case 0x31:
+                        XorRm16();
                         break;
                     case 0x8e:
                         MovSegRM16();
