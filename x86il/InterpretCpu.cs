@@ -198,12 +198,12 @@ namespace x86il
         }
             
 
-        public void XorRm8()
+        public void XorRm8(bool rmFirst = true)
         {
-            ModRm((x, y) =>  (UInt16)(x ^ y));                                     
+            ModRm((x, y) =>  (UInt16)(x ^ y),RegisterType.reg8,RegisterType.reg8,rmFirst);                                     
         }
 
-        public void XorRm16()
+        public void XorRm16(bool rmFirst = true)
         {
             ModRm((x, y) => (UInt32)(x ^ y),RegisterType.reg16,RegisterType.reg16);
         }
@@ -504,6 +504,12 @@ namespace x86il
                         break;
                     case 0x31:
                         XorRm16();
+                        break;
+                    case 0x32:
+                        XorRm8(false);
+                        break;
+                    case 0x33:
+                        XorRm16(false);
                         break;
                     case 0x8e:
                         MovSegRM16();
