@@ -106,10 +106,7 @@ namespace x86il
                         }
                         else
                         {
-                            var low = res16 & 0xff;
-                            var high = res16 >> 8;
-                            memory[address] = (byte)low;
-                            memory[address + 1] = (byte)high;
+                            BinaryHelper.Write16Bit(memory, address, (UInt16)res16);
                         }
                     }
                     break;
