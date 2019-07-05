@@ -151,6 +151,18 @@ namespace x86il
             
         }
 
+        private void ModRmNoReturn(Func<UInt16, UInt16, UInt32> function,
+            RegisterType r1Type = RegisterType.reg8,
+            RegisterType r2Type = RegisterType.reg8)
+        {
+            ModRm(function,
+                r1Type,
+                r2Type,
+                (UInt16 x, UInt16 y, byte z) => { },
+                (UInt16 x, UInt16 y, UInt16 z) => { },
+                (UInt16 x, UInt16 y, UInt16 z) => { });
+        }
+
         public InterpretCpu(byte[] mem)
         {
             memory = mem;
@@ -393,6 +405,11 @@ namespace x86il
             registers.Set(reg, (UInt16)(registers.Get(reg) ^ BinaryHelper.Read16Bit(memory, ip + 1)));
             ip += 3;
         }
+        public void Cmp8ModRm(bool rmFirst = false)
+        {
+            ModRmNoReturn((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg8, RegisterType.reg8);
+        }
+
 
 
         public void Execute(int ipStart, int ipEnd)
@@ -548,6 +565,9 @@ namespace x86il
                         break;
                     case 0x35:
                         Xor16Imm16(Reg16.ax);
+                        break;
+                    case 0x38:
+                        Cmp8ModRm();
                         break;
                     case 0x8e:
                         MovSegRM16();
