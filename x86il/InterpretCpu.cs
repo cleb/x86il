@@ -73,10 +73,34 @@ namespace x86il
             return BinaryHelper.Read16Bit(memory, address);
         }
 
-        private void ModRm(Func<UInt16, UInt16, UInt32> function, 
-            RegisterType r1Type = RegisterType.reg8, 
+        private void ModRm(Func<UInt16, UInt16, UInt32> function,
+            RegisterType r1Type = RegisterType.reg8,
             RegisterType r2Type = RegisterType.reg8,
-            bool rmFirst = true) 
+            bool rmFirst = true)
+        {
+            Action<UInt16,UInt16,byte> rm8func = (UInt16 r1, UInt16 address, byte res8) 
+                => registers.Set(r1, (byte)res8, r1Type);
+            Action<UInt16, UInt16, byte> rm8funcReverse = (UInt16 r1, UInt16 address, byte res8) 
+                => memory[address] = (byte)res8;
+            Action<UInt16, UInt16, UInt16> rm16func = (UInt16 r1, UInt16 address, UInt16 res16) 
+                => registers.Set(r1, (UInt16)res16, r1Type);
+            Action<UInt16, UInt16, UInt16> rm16funcReverse = (UInt16 r1, UInt16 address, UInt16 res16) 
+                => BinaryHelper.Write16Bit(memory, address, (UInt16)res16);
+            Action<UInt16, UInt16,  UInt16> r16func = (UInt16 r1, UInt16 r2, UInt16 result) 
+                => registers.Set(rmFirst ? r1 : r2, (UInt16)result, rmFirst ? r1Type : r2Type);
+
+            ModRm(function, r1Type, r2Type,
+                rmFirst ? rm8func : rm8funcReverse,
+                rmFirst ? rm16func : rm16funcReverse,
+                r16func);            
+        }
+
+        private void ModRm(Func<UInt16, UInt16, UInt32> function, 
+            RegisterType r1Type, 
+            RegisterType r2Type,
+            Action<UInt16,UInt16,byte> Rm8Result,
+            Action<UInt16,UInt16,UInt16> Rm16Result,
+            Action<UInt16,UInt16,UInt16> R16Result) 
         {
             byte modrm = memory[ip + 1];
             var r1 = (UInt16)((modrm >> 3) & 7);
@@ -89,25 +113,14 @@ namespace x86il
                     if (r1Type == RegisterType.reg8)
                     {
                         var res8 = function(registers.Get(r1, r1Type), memory[address]);
-                        if (rmFirst)
-                        {
-                            registers.Set(r1,(byte)res8, r1Type);
-                        } else
-                        {
-                            memory[address] = (byte)res8;
-                        }
+                        SetFlagsFromResult((Int32)res8, 1);
+                        Rm8Result(r1, address, (byte) res8);
                     }
                     else
                     {
                         var res16 = function(registers.Get(r1, r1Type), GetUInt16FromMemory(address));
-                        if (rmFirst)
-                        {
-                            registers.Set(r1, (UInt16) res16, r1Type);
-                        }
-                        else
-                        {
-                            BinaryHelper.Write16Bit(memory, address, (UInt16)res16);
-                        }
+                        SetFlagsFromResult((Int32)res16, 2);
+                        Rm16Result(r1, address, (UInt16)res16);
                     }
                     break;
                 case 0x03:
@@ -117,8 +130,7 @@ namespace x86il
                         registers.Get(r2, r2Type));
 
                     SetFlagsFromResult((Int32)result, r1Type == RegisterType.reg8 ? 1 : 2);
-
-                    registers.Set(rmFirst ? r1 : r2, (UInt16)result,  rmFirst ? r1Type : r2Type);
+                    R16Result(r1, r2, (UInt16)result);
                     ip += 2;
                     break;
             }
