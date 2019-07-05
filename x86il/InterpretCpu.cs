@@ -95,12 +95,39 @@ namespace x86il
                 r16func);            
         }
 
+        private void ModRm(Func<UInt16, UInt16, UInt32> function,
+            RegisterType r1Type,
+            RegisterType r2Type,
+            Action<UInt16, UInt16, byte> Rm8ResultFunc,
+            Action<UInt16, UInt16, UInt16> Rm16ResultFunc,
+            Action<UInt16, UInt16, UInt16> R16ResultFunc)
+        {
+            Action<UInt16, UInt16> rm8Result = (UInt16 r1, UInt16 address) =>
+            {
+                var res8 = function(registers.Get(r1, r1Type), memory[address]);
+                SetFlagsFromResult((Int32)res8, 1);
+                Rm8ResultFunc(r1, address, (byte)res8);
+            };
+            Action<UInt16, UInt16> rm16Result = (UInt16 r1, UInt16 address) =>
+            {
+                var res16 = function(registers.Get(r1, r1Type), GetUInt16FromMemory(address));
+                SetFlagsFromResult((Int32)res16, 2);
+                Rm16ResultFunc(r1, address, (UInt16)res16);
+            };
+            Action<UInt16, UInt16, UInt32> R16Result = (UInt16 r1, UInt16 r2, UInt32 result) =>
+            {
+                SetFlagsFromResult((Int32)result, r1Type == RegisterType.reg8 ? 1 : 2);
+                R16ResultFunc(r1, r2, (UInt16)result);
+            };
+
+            ModRm(function, r1Type, r2Type, r1Type == RegisterType.reg8 ? rm8Result : rm16Result, R16Result);
+        }
+
         private void ModRm(Func<UInt16, UInt16, UInt32> function, 
             RegisterType r1Type, 
             RegisterType r2Type,
-            Action<UInt16,UInt16,byte> Rm8Result,
-            Action<UInt16,UInt16,UInt16> Rm16Result,
-            Action<UInt16,UInt16,UInt16> R16Result) 
+            Action<UInt16,UInt16> RmResult,
+            Action<UInt16,UInt16,UInt32> RegResult) 
         {
             byte modrm = memory[ip + 1];
             var r1 = (UInt16)((modrm >> 3) & 7);
@@ -110,27 +137,14 @@ namespace x86il
                 case 0x01:
                 case 0x02:
                     var address = getEffectiveAddressFromModRm(modrm);
-                    if (r1Type == RegisterType.reg8)
-                    {
-                        var res8 = function(registers.Get(r1, r1Type), memory[address]);
-                        SetFlagsFromResult((Int32)res8, 1);
-                        Rm8Result(r1, address, (byte) res8);
-                    }
-                    else
-                    {
-                        var res16 = function(registers.Get(r1, r1Type), GetUInt16FromMemory(address));
-                        SetFlagsFromResult((Int32)res16, 2);
-                        Rm16Result(r1, address, (UInt16)res16);
-                    }
+                    RmResult(r1, address);
                     break;
                 case 0x03:
                     var r2 = (UInt16)((modrm) & 7);
-
                     var result = function(registers.Get(r1, r1Type),
                         registers.Get(r2, r2Type));
 
-                    SetFlagsFromResult((Int32)result, r1Type == RegisterType.reg8 ? 1 : 2);
-                    R16Result(r1, r2, (UInt16)result);
+                    RegResult(r1, r2, result);
                     ip += 2;
                     break;
             }
