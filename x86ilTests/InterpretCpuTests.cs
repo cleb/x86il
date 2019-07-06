@@ -313,5 +313,29 @@ namespace x86il.Tests
             var cpu = RunAsmTest("Cmp16Rm162");
             Assert.AreEqual(true, cpu.CpuFlags.HasFlag(Flags.Zero));
         }
+        [Test]
+        public void ExecuteTestCmp8Imm8False()
+        {
+            var cpu = RunAsmTest("Cmp8Imm8");
+            Assert.AreEqual(false, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
+        [Test]
+        public void ExecuteTestCmp8Imm8True()
+        {
+            var cpu = RunAsmTest("Cmp8Imm82");
+            Assert.AreEqual(true, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
+        [Test]
+        public void ExecuteTestCmp16Imm16False()
+        {
+            var cpu = RunAsmTest("Cmp16Imm16");
+            Assert.AreEqual(false, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
+        [Test]
+        public void ExecuteTestCmp16Imm16True()
+        {
+            var cpu = RunAsmTest("Cmp16Imm162");
+            Assert.AreEqual(true, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
     }
 }

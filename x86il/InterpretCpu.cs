@@ -413,6 +413,16 @@ namespace x86il
         {
             ModRmNoReturn((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg16, RegisterType.reg16);
         }
+        public void Cmp8Imm8(Reg8 reg)
+        {
+            SetFlagsFromResult(registers.Get(reg) - memory[ip + 1]);
+            ip += 2;
+        }
+        public void Cmp16Imm16(Reg16 reg)
+        {
+            SetFlagsFromResult(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1));
+            ip += 3;
+        }
 
 
 
@@ -576,6 +586,19 @@ namespace x86il
                     case 0x39:
                         Cmp16ModRm();
                         break;
+                    case 0x3A:
+                        Cmp8ModRm(true);
+                        break;
+                    case 0x3B:
+                        Cmp16ModRm(true);
+                        break;
+                    case 0x3C:
+                        Cmp8Imm8(Reg8.al);
+                        break;
+                    case 0x3D:
+                        Cmp16Imm16(Reg16.ax);
+                        break;
+
                     case 0x8e:
                         MovSegRM16();
                         break;
