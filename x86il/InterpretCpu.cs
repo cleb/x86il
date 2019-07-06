@@ -409,6 +409,10 @@ namespace x86il
         {
             ModRmNoReturn((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg8, RegisterType.reg8);
         }
+        public void Cmp16ModRm(bool rmFirst = false)
+        {
+            ModRmNoReturn((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg16, RegisterType.reg16);
+        }
 
 
 
@@ -568,6 +572,9 @@ namespace x86il
                         break;
                     case 0x38:
                         Cmp8ModRm();
+                        break;
+                    case 0x39:
+                        Cmp16ModRm();
                         break;
                     case 0x8e:
                         MovSegRM16();

@@ -281,7 +281,37 @@ namespace x86il.Tests
         public void ExecuteTestXor16Rm16()
         {
             var cpu = RunAsmTest("Xor16Rm16");
+            Assert.AreEqual(5272, cpu.GetRegister(Reg16.bx));
+        }
+        [Test]
+        public void ExecuteTestXor16Imm16()
+        {
+            var cpu = RunAsmTest("Xor16Imm16");
             Assert.AreEqual(5272, cpu.GetRegister(Reg16.ax));
+        }
+        [Test]
+        public void ExecuteTestCmp8Rm8False()
+        {
+            var cpu = RunAsmTest("Cmp8Rm8");
+            Assert.AreEqual(false, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
+        [Test]
+        public void ExecuteTestCmp8Rm8True()
+        {
+            var cpu = RunAsmTest("Cmp8Rm82");
+            Assert.AreEqual(true, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
+        [Test]
+        public void ExecuteTestCmp16Rm16False()
+        {
+            var cpu = RunAsmTest("Cmp16Rm16");
+            Assert.AreEqual(false, cpu.CpuFlags.HasFlag(Flags.Zero));
+        }
+        [Test]
+        public void ExecuteTestCmp16Rm16True()
+        {
+            var cpu = RunAsmTest("Cmp16Rm162");
+            Assert.AreEqual(true, cpu.CpuFlags.HasFlag(Flags.Zero));
         }
     }
 }
