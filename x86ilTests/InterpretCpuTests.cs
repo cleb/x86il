@@ -337,5 +337,33 @@ namespace x86il.Tests
             var cpu = RunAsmTest("Cmp16Imm162");
             Assert.AreEqual(true, cpu.CpuFlags.HasFlag(Flags.Zero));
         }
+        [Test]
+        public void ExecuteTestInc8()
+        {
+            var cpu = RunAsmTest("Inc8");
+            Assert.AreEqual(5, cpu.GetRegister(Reg8.al));
+            Assert.AreEqual(10, cpu.GetRegister(Reg8.bl));
+            Assert.AreEqual(18, cpu.GetRegister(Reg8.cl));
+            Assert.AreEqual(20, cpu.GetRegister(Reg8.dl));
+            Assert.AreEqual(25, cpu.GetRegister(Reg8.ah));
+            Assert.AreEqual(46, cpu.GetRegister(Reg8.bh));
+            Assert.AreEqual(9, cpu.GetRegister(Reg8.ch));
+            Assert.AreEqual(22, cpu.GetRegister(Reg8.dh));
+
+        }
+        [Test]
+        public void ExecuteTestInc16()
+        {
+            var cpu = RunAsmTest("Inc16");
+            Assert.AreEqual(5, cpu.GetRegister(Reg16.ax));
+            Assert.AreEqual(10, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(18, cpu.GetRegister(Reg16.cx));
+            Assert.AreEqual(20, cpu.GetRegister(Reg16.dx));
+            Assert.AreEqual(25, cpu.GetRegister(Reg16.sp));
+            Assert.AreEqual(46, cpu.GetRegister(Reg16.bp));
+            Assert.AreEqual(9, cpu.GetRegister(Reg16.si));
+            Assert.AreEqual(22, cpu.GetRegister(Reg16.di));
+
+        }
     }
 }
