@@ -423,6 +423,18 @@ namespace x86il
             SetFlagsFromResult(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1));
             ip += 3;
         }
+        public void Inc8()
+        {
+            ModRm((r1, r2) => (UInt32)(r2 + 1), RegisterType.reg8, RegisterType.reg8,false);
+        }
+        public void Inc16(Reg16 reg)
+        {
+            var value = registers.Get(reg);
+            value++;
+            SetFlagsFromResult(value);
+            registers.Set(reg, value);
+            ip++;
+        }
 
 
 
@@ -598,6 +610,31 @@ namespace x86il
                     case 0x3D:
                         Cmp16Imm16(Reg16.ax);
                         break;
+                    case 0x40:
+                        Inc16(Reg16.ax);
+                        break;
+                    case 0x41:
+                        Inc16(Reg16.cx);
+                        break;
+                    case 0x42:
+                        Inc16(Reg16.dx);
+                        break;
+                    case 0x43:
+                        Inc16(Reg16.bx);
+                        break;
+                    case 0x44:
+                        Inc16(Reg16.sp);
+                        break;
+                    case 0x45:
+                        Inc16(Reg16.bp);
+                        break;
+                    case 0x46:
+                        Inc16(Reg16.si);
+                        break;
+                    case 0x47:
+                        Inc16(Reg16.di);
+                        break;
+
 
                     case 0x8e:
                         MovSegRM16();
@@ -652,6 +689,9 @@ namespace x86il
                         break;
                     case 0xcd:
                         Interrupt();
+                        break;
+                    case 0xfe:
+                        Inc8();
                         break;
                     default:
                         throw new NotImplementedException();
