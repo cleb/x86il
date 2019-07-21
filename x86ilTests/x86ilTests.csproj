@@ -76,6 +76,15 @@
       <Generator>nasm Adc16Imm16.asm -o Adc16Imm16.o</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestAsm\Dec16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Inc16.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Inc8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\Adc8Imm8.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

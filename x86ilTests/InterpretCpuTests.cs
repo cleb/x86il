@@ -365,5 +365,19 @@ namespace x86il.Tests
             Assert.AreEqual(22, cpu.GetRegister(Reg16.di));
 
         }
+        [Test]
+        public void ExecuteTestDec16()
+        {
+            var cpu = RunAsmTest("Dec16");
+            Assert.AreEqual(3, cpu.GetRegister(Reg16.ax));
+            Assert.AreEqual(6, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(12, cpu.GetRegister(Reg16.cx));
+            Assert.AreEqual(12, cpu.GetRegister(Reg16.dx));
+            Assert.AreEqual(21, cpu.GetRegister(Reg16.sp));
+            Assert.AreEqual(38, cpu.GetRegister(Reg16.bp));
+            Assert.AreEqual(-3, (Int16)cpu.GetRegister(Reg16.si));
+            Assert.AreEqual(6, cpu.GetRegister(Reg16.di));
+
+        }
     }
 }

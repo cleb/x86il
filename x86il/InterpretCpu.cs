@@ -435,6 +435,14 @@ namespace x86il
             registers.Set(reg, value);
             ip++;
         }
+        public void Dec16(Reg16 reg)
+        {
+            var value = registers.Get(reg);
+            value--;
+            SetFlagsFromResult(value);
+            registers.Set(reg, value);
+            ip++;
+        }
 
 
 
@@ -633,6 +641,30 @@ namespace x86il
                         break;
                     case 0x47:
                         Inc16(Reg16.di);
+                        break;
+                    case 0x48:
+                        Dec16(Reg16.ax);
+                        break;
+                    case 0x49:
+                        Dec16(Reg16.cx);
+                        break;
+                    case 0x4A:
+                        Dec16(Reg16.dx);
+                        break;
+                    case 0x4B:
+                        Dec16(Reg16.bx);
+                        break;
+                    case 0x4C:
+                        Dec16(Reg16.sp);
+                        break;
+                    case 0x4D:
+                        Dec16(Reg16.bp);
+                        break;
+                    case 0x4E:
+                        Dec16(Reg16.si);
+                        break;
+                    case 0x4F:
+                        Dec16(Reg16.di);
                         break;
 
 
