@@ -260,10 +260,24 @@ namespace x86il
             ip++;
         }
 
+        public void Push(Reg16 reg)
+        {
+            var value = registers.Get(reg);
+            PushValue(value);
+            ip++;
+        }
+
         public void Pop(Segments seg)
         {
             var segment = PopValue16();
             registers.Set(seg, segment);
+            ip++;
+        }
+
+        public void Pop(Reg16 reg)
+        {
+            var register = PopValue16();
+            registers.Set(reg, register);
             ip++;
         }
 
@@ -665,6 +679,54 @@ namespace x86il
                         break;
                     case 0x4F:
                         Dec16(Reg16.di);
+                        break;
+                    case 0x50:
+                        Push(Reg16.ax);
+                        break;
+                    case 0x51:
+                        Push(Reg16.cx);
+                        break;
+                    case 0x52:
+                        Push(Reg16.dx);
+                        break;
+                    case 0x53:
+                        Push(Reg16.bx);
+                        break;
+                    case 0x54:
+                        Push(Reg16.sp);
+                        break;
+                    case 0x55:
+                        Push(Reg16.bp);
+                        break;
+                    case 0x56:
+                        Push(Reg16.si);
+                        break;
+                    case 0x57:
+                        Push(Reg16.di);
+                        break;
+                    case 0x58:
+                        Pop(Reg16.ax);
+                        break;
+                    case 0x59:
+                        Pop(Reg16.cx);
+                        break;
+                    case 0x5A:
+                        Pop(Reg16.dx);
+                        break;
+                    case 0x5B:
+                        Pop(Reg16.bx);
+                        break;
+                    case 0x5C:
+                        Pop(Reg16.sp);
+                        break;
+                    case 0x5D:
+                        Pop(Reg16.bp);
+                        break;
+                    case 0x5E:
+                        Pop(Reg16.si);
+                        break;
+                    case 0x5F:
+                        Pop(Reg16.di);
                         break;
 
 
