@@ -392,5 +392,20 @@ namespace x86il.Tests
             Assert.AreEqual(4, cpu.GetRegister(Reg16.di));
 
         }
+        [Test]
+        public void ExecuteTestPushaPopa16()
+        {
+            var cpu = RunAsmTest("PushaPopa16");
+            Assert.AreEqual(4, cpu.GetRegister(Reg16.ax));
+            Assert.AreEqual(8, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
+            Assert.AreEqual(16, cpu.GetRegister(Reg16.dx));
+            Assert.AreEqual(23, cpu.GetRegister(Reg16.si));
+            Assert.AreEqual(42, cpu.GetRegister(Reg16.di));
+            Assert.AreEqual(3, cpu.GetRegister(Reg16.bp));
+            
+            
+
+        }
     }
 }

@@ -457,6 +457,33 @@ namespace x86il
             registers.Set(reg, value);
             ip++;
         }
+        public void Pusha()
+        {
+            var sp = registers.Get(Reg16.sp);
+            PushValue(registers.Get(Reg16.ax));
+            PushValue(registers.Get(Reg16.cx));
+            PushValue(registers.Get(Reg16.dx));
+            PushValue(registers.Get(Reg16.bx));
+            PushValue(sp);
+            PushValue(registers.Get(Reg16.bp));
+            PushValue(registers.Get(Reg16.si));
+            PushValue(registers.Get(Reg16.di));
+            ip++;
+        }
+
+        public void Popa()
+        {
+            registers.Set(Reg16.di, PopValue16());
+            registers.Set(Reg16.si, PopValue16());
+            registers.Set(Reg16.bp, PopValue16());
+            var sp = PopValue16();
+            registers.Set(Reg16.bx, PopValue16());
+            registers.Set(Reg16.dx, PopValue16());
+            registers.Set(Reg16.cx, PopValue16());
+            registers.Set(Reg16.ax, PopValue16());
+            registers.Set(Reg16.sp, sp);
+            ip++;
+        }
 
 
 
@@ -728,8 +755,12 @@ namespace x86il
                     case 0x5F:
                         Pop(Reg16.di);
                         break;
-
-
+                    case 0x60:
+                        Pusha();
+                        break;
+                    case 0x61:
+                        Popa();
+                        break;
                     case 0x8e:
                         MovSegRM16();
                         break;
