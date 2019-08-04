@@ -104,19 +104,25 @@ namespace x86il
         {
             Action<UInt16, UInt16> rm8Result = (UInt16 r1, UInt16 address) =>
             {
-                var res8 = function(registers.Get(r1, r1Type), memory[address]);
-                SetFlagsFromResult((Int32)res8, 1);
+                ushort r1Value = registers.Get(r1, r1Type);
+                byte memValue = memory[address];
+                var res8 = function(r1Value, memValue);
+                SetFlagsFromInputAndResult((Int32)res8, r1Value, memValue, 1);
                 Rm8ResultFunc(r1, address, (byte)res8);
             };
             Action<UInt16, UInt16> rm16Result = (UInt16 r1, UInt16 address) =>
             {
-                var res16 = function(registers.Get(r1, r1Type), GetUInt16FromMemory(address));
-                SetFlagsFromResult((Int32)res16, 2);
+                ushort r1Value = registers.Get(r1, r1Type);
+                ushort memValue = GetUInt16FromMemory(address);
+                var res16 = function(r1Value, memValue);
+                SetFlagsFromInputAndResult((Int32)res16, r1Value, memValue, 2);
                 Rm16ResultFunc(r1, address, (UInt16)res16);
             };
             Action<UInt16, UInt16, UInt32> R16Result = (UInt16 r1, UInt16 r2, UInt32 result) =>
             {
-                SetFlagsFromResult((Int32)result, r1Type == RegisterType.reg8 ? 1 : 2);
+                var r1Value = registers.Get(r1, r1Type);
+                var r2Value = registers.Get(r2, r2Type);
+                SetFlagsFromInputAndResult((Int32)result, r1Value, r2Value, r1Type == RegisterType.reg8 ? 1 : 2);
                 R16ResultFunc(r1, r2, (UInt16)result);
             };
 
@@ -220,7 +226,7 @@ namespace x86il
             }
         }
 
-        public void SetFlagsFromResult(Int32 result, int bits = 1)
+        public void SetFlagsFromInputAndResult(Int32 result, UInt16 input1, UInt16 input2, int bits = 1)
         {
             if (result == 0)
             {
@@ -229,6 +235,10 @@ namespace x86il
             if (result >= (bits << 8) || result < 0)
             {
                 flags |= Flags.Carry;
+            }
+            if(((Int16)input1 >0 && (Int16)input2 > 0 && (Int16) result < 0) || ((Int16)input1 < 0 && (Int16)input2 < 0 && (Int16)result > 0))
+            {
+                flags |= Flags.Overflow;
             }
         }
             
@@ -429,12 +439,16 @@ namespace x86il
         }
         public void Cmp8Imm8(Reg8 reg)
         {
-            SetFlagsFromResult(registers.Get(reg) - memory[ip + 1]);
+            byte regValue = registers.Get(reg);
+            byte immValue = memory[ip + 1];
+            SetFlagsFromInputAndResult(regValue - immValue, regValue, immValue);
             ip += 2;
         }
         public void Cmp16Imm16(Reg16 reg)
         {
-            SetFlagsFromResult(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1));
+            ushort regValue = registers.Get(reg);
+            ushort immValue = BinaryHelper.Read16Bit(memory, ip + 1);
+            SetFlagsFromInputAndResult(regValue - immValue, regValue, immValue);
             ip += 3;
         }
         public void Inc8()
@@ -445,7 +459,7 @@ namespace x86il
         {
             var value = registers.Get(reg);
             value++;
-            SetFlagsFromResult(value);
+            SetFlagsFromInputAndResult(value, registers.Get(reg),0,2);
             registers.Set(reg, value);
             ip++;
         }
@@ -453,7 +467,7 @@ namespace x86il
         {
             var value = registers.Get(reg);
             value--;
-            SetFlagsFromResult(value);
+            SetFlagsFromInputAndResult(value, registers.Get(reg),0,2);
             registers.Set(reg, value);
             ip++;
         }
