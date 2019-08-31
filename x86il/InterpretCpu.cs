@@ -226,20 +226,38 @@ namespace x86il
             }
         }
 
-        public void SetFlagsFromInputAndResult(Int32 result, UInt16 input1, UInt16 input2, int bits = 1)
+        private void CheckZeroFlag(Int32 result, UInt16 input1, UInt16 input2)
         {
             if (result == 0)
             {
                 flags |= Flags.Zero;
             }
-            if (result >= (bits << 8) || result < 0)
+        }
+        private void CheckCarryFlag(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        {
+            if (result >= (bytes << 8) || result < 0)
             {
                 flags |= Flags.Carry;
             }
-            if(((Int16)input1 >0 && (Int16)input2 > 0 && (Int16) result < 0) || ((Int16)input1 < 0 && (Int16)input2 < 0 && (Int16)result > 0))
+        }
+        private void CheckOverflowFlag(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        {
+            Int16 adjusted1 = (Int16)(bytes == 1 ? (sbyte)input1 : (Int16) input1);
+            Int16 adjusted2 = (Int16)(bytes == 1 ? (sbyte)input2 : (Int16) input2);
+            Int16 adjustedResult = (Int16)(bytes == 1 ? (sbyte)result : (Int16) result);
+
+            if ((adjusted1 > 0 && adjusted2 > 0 && adjustedResult < 0)
+                || (adjusted1 < 0 && adjusted2 < 0 && adjustedResult > 0))
             {
                 flags |= Flags.Overflow;
             }
+        }
+
+        public void SetFlagsFromInputAndResult(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        {
+            CheckZeroFlag(result, input1, input2);
+            CheckCarryFlag(result, input1, input2,bytes);
+            CheckOverflowFlag(result, input1, input2, bytes);
         }
             
 
@@ -497,6 +515,16 @@ namespace x86il
             registers.Set(Reg16.ax, PopValue16());
             registers.Set(Reg16.sp, sp);
             ip++;
+        }
+
+        public void Jumpif(Flags flag, bool state)
+        {
+            if (flags.HasFlag(flag))
+            {
+                ip += (char)memory[ip + 1];
+                return;
+            }
+            ip += 2;
         }
 
 
@@ -774,6 +802,9 @@ namespace x86il
                         break;
                     case 0x61:
                         Popa();
+                        break;
+                    case 0x70:
+                        Jumpif(Flags.Overflow, true);
                         break;
                     case 0x8e:
                         MovSegRM16();

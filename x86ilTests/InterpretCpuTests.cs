@@ -403,9 +403,14 @@ namespace x86il.Tests
             Assert.AreEqual(23, cpu.GetRegister(Reg16.si));
             Assert.AreEqual(42, cpu.GetRegister(Reg16.di));
             Assert.AreEqual(3, cpu.GetRegister(Reg16.bp));
-            
-            
+        }
 
+        [Test]
+        public void ExecuteTestJo()
+        {
+            var cpu = RunAsmTest("Jo");
+            Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
         }
     }
 }
