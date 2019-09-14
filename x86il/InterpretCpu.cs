@@ -8,10 +8,20 @@ namespace x86il
     {
         public Registers registers;
         public FlagsRegister flagsRegister;
+        public Stack stack;
         public Flags CpuFlags => flagsRegister.CpuFlags;
         int ip = 0;
         byte[] memory;
         Dictionary<Byte, Action> IntHandlers;
+
+        public InterpretCpu(byte[] mem)
+        {
+            memory = mem;
+            registers = new Registers();
+            IntHandlers = new Dictionary<byte, Action>();
+            flagsRegister = new FlagsRegister();
+            stack = new Stack(registers, memory);
+        }
 
         private UInt16 getEffectiveAddress(UInt16 modrm)
         {
@@ -167,14 +177,6 @@ namespace x86il
                 (UInt16 x, UInt16 y, UInt16 z) => { });
         }
 
-        public InterpretCpu(byte[] mem)
-        {
-            memory = mem;
-            registers = new Registers();
-            IntHandlers = new Dictionary<byte, Action>();
-            flagsRegister = new FlagsRegister();
-        }
-
         public Byte GetRegister(Reg8 register)
         {
             return registers.Get(register);
@@ -238,46 +240,27 @@ namespace x86il
             ModRm((x, y) => y,RegisterType.segment);
         }
 
-        public void PushValue(UInt16 Value)
-        {
-            var sp = registers.Get(Reg16.sp);
-            BinaryHelper.Write16Bit(memory, (registers.Get(Segments.ss) << 4) + sp - 1, Value);
-            registers.Set(Reg16.sp, (UInt16)(sp - 2));
-        }
-
-        public UInt16 PopValue16()
-        {
-            var sp = registers.Get(Reg16.sp);
-            var ret = BinaryHelper.Read16Bit(memory, (registers.Get(Segments.ss) << 4) + sp + 1);
-            registers.Set(Reg16.sp, (UInt16)(sp + 2));
-            return ret;
-        }
-
         public void Push(Segments seg)
         {
-            var value = registers.Get(seg);
-            PushValue(value);
+            stack.Push(seg);
             ip++;
         }
 
         public void Push(Reg16 reg)
         {
-            var value = registers.Get(reg);
-            PushValue(value);
+            stack.Push(reg);
             ip++;
         }
 
         public void Pop(Segments seg)
         {
-            var segment = PopValue16();
-            registers.Set(seg, segment);
+            stack.Pop(seg);
             ip++;
         }
 
         public void Pop(Reg16 reg)
         {
-            var register = PopValue16();
-            registers.Set(reg, register);
+            stack.Pop(reg);
             ip++;
         }
 
@@ -464,27 +447,17 @@ namespace x86il
         public void Pusha()
         {
             var sp = registers.Get(Reg16.sp);
-            PushValue(registers.Get(Reg16.ax));
-            PushValue(registers.Get(Reg16.cx));
-            PushValue(registers.Get(Reg16.dx));
-            PushValue(registers.Get(Reg16.bx));
-            PushValue(sp);
-            PushValue(registers.Get(Reg16.bp));
-            PushValue(registers.Get(Reg16.si));
-            PushValue(registers.Get(Reg16.di));
+            stack.Push(Reg16.ax, Reg16.cx, Reg16.dx, Reg16.bx);
+            stack.PushValue(sp);
+            stack.Push(Reg16.bp, Reg16.si, Reg16.di);
             ip++;
         }
 
         public void Popa()
         {
-            registers.Set(Reg16.di, PopValue16());
-            registers.Set(Reg16.si, PopValue16());
-            registers.Set(Reg16.bp, PopValue16());
-            var sp = PopValue16();
-            registers.Set(Reg16.bx, PopValue16());
-            registers.Set(Reg16.dx, PopValue16());
-            registers.Set(Reg16.cx, PopValue16());
-            registers.Set(Reg16.ax, PopValue16());
+            stack.Pop(Reg16.di, Reg16.si, Reg16.bp);
+            var sp = stack.PopValue16();
+            stack.Pop(Reg16.bx, Reg16.dx, Reg16.cx, Reg16.ax);
             registers.Set(Reg16.sp, sp);
             ip++;
         }
