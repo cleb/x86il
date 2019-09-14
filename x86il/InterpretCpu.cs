@@ -784,6 +784,9 @@ namespace x86il
                     case 0x72:
                         Jumpif(Flags.Carry, true);
                         break;
+                    case 0x73:
+                        Jumpif(Flags.Carry, false);
+                        break;
                     case 0x8e:
                         MovSegRM16();
                         break;
