@@ -489,14 +489,29 @@ namespace x86il
             ip++;
         }
 
-        public void Jumpif(Flags flag, bool state)
+        public void JumpIf(bool condition)
         {
-            if (!(flagsRegister.HasFlag(flag)^state))
+            if (condition)
             {
-                ip += (char)memory[ip + 1];
+                ip += (char)memory[ip + 1] + 2;
                 return;
             }
             ip += 2;
+        }
+
+        public void JumpIf(Flags flag, bool state)
+        {
+            JumpIf(FlagIsInState(flag, state));
+        }
+
+        private bool FlagIsInState(Flags flag, bool state)
+        {
+            return !(flagsRegister.HasFlag(flag) ^ state);
+        }
+
+        public void JumpIfAny(List<Tuple<Flags,bool>> conditions)
+        {
+            JumpIf(conditions.Exists(x => FlagIsInState(x.Item1,x.Item2)));
         }
 
 
@@ -776,22 +791,34 @@ namespace x86il
                         Popa();
                         break;
                     case 0x70:
-                        Jumpif(Flags.Overflow, true);
+                        JumpIf(Flags.Overflow, true);
                         break;
                     case 0x71:
-                        Jumpif(Flags.Overflow, false);
+                        JumpIf(Flags.Overflow, false);
                         break;
                     case 0x72:
-                        Jumpif(Flags.Carry, true);
+                        JumpIf(Flags.Carry, true);
                         break;
                     case 0x73:
-                        Jumpif(Flags.Carry, false);
+                        JumpIf(Flags.Carry, false);
                         break;
                     case 0x74:
-                        Jumpif(Flags.Zero, true);
+                        JumpIf(Flags.Zero, true);
                         break;
                     case 0x75:
-                        Jumpif(Flags.Zero, false);
+                        JumpIf(Flags.Zero, false);
+                        break;
+                    case 0x76:
+                        JumpIfAny(new List<Tuple<Flags, bool>> {
+                            new Tuple<Flags,bool>(Flags.Zero, true),
+                            new Tuple<Flags,bool>(Flags.Carry, true)
+                        });
+                        break;
+                    case 0x77:
+                        JumpIfAny(new List<Tuple<Flags,bool>> {
+                            new Tuple<Flags,bool>(Flags.Zero, false),
+                            new Tuple<Flags,bool>(Flags.Carry, false)
+                        });
                         break;
                     case 0x8e:
                         MovSegRM16();
