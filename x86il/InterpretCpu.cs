@@ -519,7 +519,7 @@ namespace x86il
 
         public void Jumpif(Flags flag, bool state)
         {
-            if (flags.HasFlag(flag))
+            if (!(flags.HasFlag(flag)^state))
             {
                 ip += (char)memory[ip + 1];
                 return;
@@ -805,6 +805,9 @@ namespace x86il
                         break;
                     case 0x70:
                         Jumpif(Flags.Overflow, true);
+                        break;
+                    case 0x71:
+                        Jumpif(Flags.Overflow, false);
                         break;
                     case 0x8e:
                         MovSegRM16();
