@@ -64,6 +64,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestAsm\Jz.asm">
+      <Generator>nasm</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Jnz.asm">
+      <Generator>nasm</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\Jnc.asm">
       <Generator>nasm</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
