@@ -48,6 +48,7 @@
     <Compile Include="DosCmd.cs" />
     <Compile Include="Emulator.cs" />
     <Compile Include="Flags.cs" />
+    <Compile Include="FlagsRegister.cs" />
     <Compile Include="ICpu.cs" />
     <Compile Include="InterpretCpu.cs" />
     <Compile Include="IRegisters.cs" />

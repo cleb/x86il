@@ -7,10 +7,8 @@ namespace x86il
     public class InterpretCpu : ICpu
     {
         public Registers registers;
-        public Flags flags;
-        public Flags CpuFlags {
-            get => flags;
-        }
+        public FlagsRegister flagsRegister;
+        public Flags CpuFlags => flagsRegister.CpuFlags;
         int ip = 0;
         byte[] memory;
         Dictionary<Byte, Action> IntHandlers;
@@ -174,6 +172,7 @@ namespace x86il
             memory = mem;
             registers = new Registers();
             IntHandlers = new Dictionary<byte, Action>();
+            flagsRegister = new FlagsRegister();
         }
 
         public Byte GetRegister(Reg8 register)
@@ -226,38 +225,11 @@ namespace x86il
             }
         }
 
-        private void CheckZeroFlag(Int32 result, UInt16 input1, UInt16 input2)
-        {
-            if (result == 0)
-            {
-                flags |= Flags.Zero;
-            }
-        }
-        private void CheckCarryFlag(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
-        {
-            if (result >= (bytes << 8) || result < 0)
-            {
-                flags |= Flags.Carry;
-            }
-        }
-        private void CheckOverflowFlag(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
-        {
-            Int16 adjusted1 = (Int16)(bytes == 1 ? (sbyte)input1 : (Int16) input1);
-            Int16 adjusted2 = (Int16)(bytes == 1 ? (sbyte)input2 : (Int16) input2);
-            Int16 adjustedResult = (Int16)(bytes == 1 ? (sbyte)result : (Int16) result);
-
-            if ((adjusted1 > 0 && adjusted2 > 0 && adjustedResult < 0)
-                || (adjusted1 < 0 && adjusted2 < 0 && adjustedResult > 0))
-            {
-                flags |= Flags.Overflow;
-            }
-        }
-
         public void SetFlagsFromInputAndResult(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
         {
-            CheckZeroFlag(result, input1, input2);
-            CheckCarryFlag(result, input1, input2,bytes);
-            CheckOverflowFlag(result, input1, input2, bytes);
+            flagsRegister.CheckZero(result, input1, input2);
+            flagsRegister.CheckCarry(result, input1, input2,bytes);
+            flagsRegister.CheckOverflow(result, input1, input2, bytes);
         }
             
 
@@ -358,38 +330,38 @@ namespace x86il
         }
         public void Adc8ModRm(bool rmFirst = false)
         {
-            ModRm((r1, r2) => (UInt16)(r1 + r2 + (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, rmFirst);
+            ModRm((r1, r2) => (UInt16)(r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, rmFirst);
         }
         public void Adc16ModRm(bool rmFirst = false)
         {
-            ModRm((r1, r2) => (UInt32)(r1 + r2 + (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
+            ModRm((r1, r2) => (UInt32)(r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
         public void Adc8Imm8(Reg8 reg)
         {
-            registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1] + (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1] + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
             ip += 2;
         }
         public void Adc16Imm16(Reg16 reg)
         {
-            registers.Set(reg, (UInt16)(registers.Get(reg) + BinaryHelper.Read16Bit(memory, ip + 1) + (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            registers.Set(reg, (UInt16)(registers.Get(reg) + BinaryHelper.Read16Bit(memory, ip + 1) + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
             ip += 3;
         }
         public void Sbb8ModRm(bool rmFirst = false)
         {
-            ModRm((r1, r2) => (UInt16)(r2 - r1 - (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, rmFirst);
+            ModRm((r1, r2) => (UInt16)(r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, rmFirst);
         }
         public void Sbb16ModRm(bool rmFirst = false)
         {
-            ModRm((r1, r2) => (UInt32)(r2 - r1 - (flags.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
+            ModRm((r1, r2) => (UInt32)(r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, RegisterType.reg16, rmFirst);
         }
         public void Sbb8Imm8(Reg8 reg)
         {
-            registers.Set(reg, (byte)(registers.Get(reg) - memory[ip + 1] - (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            registers.Set(reg, (byte)(registers.Get(reg) - memory[ip + 1] - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
             ip += 2;
         }
         public void Sbb16Imm16(Reg16 reg)
         {
-            registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1) - (flags.HasFlag(Flags.Carry) ? 1 : 0)));
+            registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1) - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
             ip += 3;
         }
         public void AndImm8(Reg8 reg)
@@ -519,7 +491,7 @@ namespace x86il
 
         public void Jumpif(Flags flag, bool state)
         {
-            if (!(flags.HasFlag(flag)^state))
+            if (!(flagsRegister.HasFlag(flag)^state))
             {
                 ip += (char)memory[ip + 1];
                 return;
