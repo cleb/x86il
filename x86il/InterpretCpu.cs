@@ -804,6 +804,9 @@ namespace x86il
                     case 0x7A:
                         JumpIf(Flags.Parity, true);
                         break;
+                    case 0x7B:
+                        JumpIf(Flags.Parity, false);
+                        break;
                     case 0x8e:
                         MovSegRM16();
                         break;
