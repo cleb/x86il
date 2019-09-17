@@ -233,6 +233,7 @@ namespace x86il
             flagsRegister.CheckCarry(result, input1, input2,bytes);
             flagsRegister.CheckOverflow(result, input1, input2, bytes);
             flagsRegister.CheckSign((UInt32)result, bytes);
+            flagsRegister.CheckParity(result);
         }
             
 
@@ -799,6 +800,9 @@ namespace x86il
                         break;
                     case 0x79:
                         JumpIf(Flags.Sign, false);
+                        break;
+                    case 0x7A:
+                        JumpIf(Flags.Parity, true);
                         break;
                     case 0x8e:
                         MovSegRM16();

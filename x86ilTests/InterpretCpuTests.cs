@@ -459,6 +459,7 @@ namespace x86il.Tests
             Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
             Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
         }
+
         [Test]
         public void ExecuteTestJs()
         {
@@ -472,6 +473,14 @@ namespace x86il.Tests
         {
             var cpu = RunAsmTest("Jns");
             Assert.AreEqual(8, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
+        }
+
+        [Test]
+        public void ExecuteTestJp()
+        {
+            var cpu = RunAsmTest("Jp");
+            Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
             Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
         }
     }

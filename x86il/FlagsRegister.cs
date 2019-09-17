@@ -38,6 +38,21 @@ namespace x86il
                 || (adjusted1 < 0 && adjusted2 < 0 && adjustedResult > 0));
         }
 
+        public void CheckParity(Int32 result)
+        {
+            var lowest = result & 0xff;
+            bool isEven = true;
+            for(var i = 0; i < 8; i++)
+            {
+                if((lowest & 1) != 0)
+                {
+                    isEven = !isEven;
+                }
+                lowest >>= 1;
+            }
+            SetFlagBasedOnResult(Flags.Parity, isEven);
+        }
+
         public void CheckSign(UInt32 result, int bytes = 1)
         {
             Int16 adjusted = (Int16)(bytes == 1 ? (sbyte)result : (Int16)result);
