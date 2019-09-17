@@ -797,6 +797,9 @@ namespace x86il
                     case 0x78:
                         JumpIf(Flags.Sign, true);
                         break;
+                    case 0x79:
+                        JumpIf(Flags.Sign, false);
+                        break;
                     case 0x8e:
                         MovSegRM16();
                         break;

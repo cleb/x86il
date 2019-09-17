@@ -466,5 +466,13 @@ namespace x86il.Tests
             Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
             Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
         }
+
+        [Test]
+        public void ExecuteTestJns()
+        {
+            var cpu = RunAsmTest("Jns");
+            Assert.AreEqual(8, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
+        }
     }
 }
