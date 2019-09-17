@@ -37,6 +37,16 @@ namespace x86il
             }
         }
 
+        public void CheckSign(UInt32 result, int bytes = 1)
+        {
+            Int16 adjusted = (Int16)(bytes == 1 ? (sbyte)result : (Int16)result);
+            if (adjusted < 0)
+            {
+                CpuFlags |= Flags.Sign;
+            }
+
+        }
+
         public bool HasFlag(Flags flag)
         {
             return CpuFlags.HasFlag(flag);

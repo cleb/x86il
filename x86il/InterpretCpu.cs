@@ -232,6 +232,7 @@ namespace x86il
             flagsRegister.CheckZero(result, input1, input2);
             flagsRegister.CheckCarry(result, input1, input2,bytes);
             flagsRegister.CheckOverflow(result, input1, input2, bytes);
+            flagsRegister.CheckSign((UInt32)result, bytes);
         }
             
 
@@ -792,6 +793,9 @@ namespace x86il
                             new Tuple<Flags,bool>(Flags.Zero, false),
                             new Tuple<Flags,bool>(Flags.Carry, false)
                         });
+                        break;
+                    case 0x78:
+                        JumpIf(Flags.Sign, true);
                         break;
                     case 0x8e:
                         MovSegRM16();
