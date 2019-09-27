@@ -807,6 +807,12 @@ namespace x86il
                     case 0x7B:
                         JumpIf(Flags.Parity, false);
                         break;
+                    case 0x7C:
+                        JumpIf(Flags.Sign, !flagsRegister.HasFlag(Flags.Overflow));
+                        break;
+                    case 0x7D:
+                        JumpIf(Flags.Sign, flagsRegister.HasFlag(Flags.Overflow));
+                        break;
                     case 0x8e:
                         MovSegRM16();
                         break;

@@ -491,5 +491,21 @@ namespace x86il.Tests
             Assert.AreEqual(8, cpu.GetRegister(Reg16.bx));
             Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
         }
+
+        [Test]
+        public void ExecuteTestJl()
+        {
+            var cpu = RunAsmTest("Jl");
+            Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
+        }
+
+        [Test]
+        public void ExecuteTestJnl()
+        {
+            var cpu = RunAsmTest("Jnl");
+            Assert.AreEqual(8, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(15, cpu.GetRegister(Reg16.cx));
+        }
     }
 }

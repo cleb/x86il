@@ -68,6 +68,14 @@
       <Generator>nasm</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestAsm\Jnl.asm">
+      <Generator>nasm</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Jl.asm">
+      <Generator>nasm</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\Jnp.asm">
       <Generator>nasm</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
