@@ -503,11 +503,14 @@ namespace x86il
             {
                 case 0x0:
                     ModRm((r1, r2) => (uint)(r2 + imm8),RegisterType.reg8, RegisterType.reg8, false);
-                    ip += 2;
+                    break;
+                case 0x1:
+                    ModRm((r1, r2) => (uint)(r2 | imm8), RegisterType.reg8, RegisterType.reg8, false);
                     break;
                 default:
                     throw new NotImplementedException($"0x80 {opcode} not implemented");
             }
+            ip += 2;
         }
 
 

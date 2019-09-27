@@ -192,6 +192,9 @@
     <Content Include="TestAsm\Cmp8Rm8.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestAsm\OrBlImm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\PushaPopa16.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
