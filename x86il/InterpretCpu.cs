@@ -141,10 +141,10 @@ namespace x86il
             RegisterType r1Type, 
             RegisterType r2Type,
             Action<UInt16,UInt16> RmResult,
-            Action<UInt16,UInt16,UInt32> RegResult) 
+            Action<UInt16,UInt16,UInt32> RegResult)
         {
             byte modrm = memory[ip + 1];
-            var r1 = (UInt16)((modrm >> 3) & 7);
+            ushort r1 = GetRegSegmentFromModRm(modrm);
             switch (modrm >> 6)
             {
                 case 0x00:
@@ -162,7 +162,12 @@ namespace x86il
                     ip += 2;
                     break;
             }
-            
+
+        }
+
+        private static ushort GetRegSegmentFromModRm(byte modrm)
+        {
+            return (UInt16)((modrm >> 3) & 7);
         }
 
         private void ModRmNoReturn(Func<UInt16, UInt16, UInt32> function,
@@ -487,6 +492,22 @@ namespace x86il
         public void JumpIfAny(List<Tuple<Flags,bool>> conditions)
         {
             JumpIf(conditions.Exists(x => FlagIsInState(x.Item1,x.Item2)));
+        }
+
+        private void Handle0x80()
+        {
+            var modrm = memory[ip + 1];
+            byte imm8 = memory[ip + 2];
+            var opcode = GetRegSegmentFromModRm(modrm);
+            switch (opcode)
+            {
+                case 0x0:
+                    ModRm((r1, r2) => (uint)(r2 + imm8),RegisterType.reg8, RegisterType.reg8, false);
+                    ip += 2;
+                    break;
+                default:
+                    throw new NotImplementedException($"0x80 {opcode} not implemented");
+            }
         }
 
 
@@ -818,6 +839,9 @@ namespace x86il
                         break;
                     case 0x7F:
                         JumpIf(FlagIsInState(Flags.Zero, false) && flagsRegister.HasFlag(Flags.Sign) == flagsRegister.HasFlag(Flags.Overflow));
+                        break;
+                    case 0x80:
+                        Handle0x80();
                         break;
                     case 0x8e:
                         MovSegRM16();
