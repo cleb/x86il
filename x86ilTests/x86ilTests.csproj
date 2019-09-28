@@ -210,6 +210,9 @@
     <Content Include="TestAsm\SbbBlImm8.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestAsm\XorBlImm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\SubBlImm8.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
