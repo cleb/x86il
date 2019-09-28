@@ -522,6 +522,9 @@ namespace x86il
                 case 0x6:
                     ModRm((r1, r2) => (uint)(r2 ^ imm8), RegisterType.reg8, RegisterType.reg8, false);
                     break;
+                case 0x7:
+                    ModRmNoReturn((r1, r2) => (uint)(r2 - imm8), RegisterType.reg8, RegisterType.reg8);
+                    break;
                 default:
                     throw new NotImplementedException($"0x80 {opcode} not implemented");
             }
