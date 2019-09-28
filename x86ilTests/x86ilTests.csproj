@@ -64,6 +64,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestAsm\AdcBlImm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\Add8Imm8.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

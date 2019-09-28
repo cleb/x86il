@@ -507,6 +507,9 @@ namespace x86il
                 case 0x1:
                     ModRm((r1, r2) => (uint)(r2 | imm8), RegisterType.reg8, RegisterType.reg8, false);
                     break;
+                case 0x2:
+                    ModRm((r1, r2) => (uint)(r2 + imm8 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, false);
+                    break;
                 default:
                     throw new NotImplementedException($"0x80 {opcode} not implemented");
             }
