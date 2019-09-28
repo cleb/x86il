@@ -558,5 +558,12 @@ namespace x86il.Tests
             var cpu = RunAsmTest("AndBlImm8");
             Assert.AreEqual(2, cpu.GetRegister(Reg8.bl));
         }
+
+        [Test]
+        public void ExecuteTestSubBlImm8()
+        {
+            var cpu = RunAsmTest("SubBlImm8");
+            Assert.AreEqual(4, cpu.GetRegister(Reg8.bl));
+        }
     }
 }
