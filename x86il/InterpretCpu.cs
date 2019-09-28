@@ -496,37 +496,51 @@ namespace x86il
 
         private void Handle0x80()
         {
+            Handle0x8X(RegisterType.reg8, "0x80");
+        }
+
+        private int GetImm(RegisterType registerType)
+        {
+            if(registerType == RegisterType.reg8)
+            {
+                return memory[ip + 2];
+            }
+            return BinaryHelper.Read16Bit(memory,ip + 2);
+        }
+
+        private void Handle0x8X(RegisterType registerType, string instruction)
+        {
             var modrm = memory[ip + 1];
-            byte imm8 = memory[ip + 2];
+            int imm = GetImm(registerType);
             var opcode = GetRegSegmentFromModRm(modrm);
             switch (opcode)
             {
                 case 0x0:
-                    ModRm((r1, r2) => (uint)(r2 + imm8),RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 + imm),registerType, registerType, false);
                     break;
                 case 0x1:
-                    ModRm((r1, r2) => (uint)(r2 | imm8), RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 | imm), registerType, registerType, false);
                     break;
                 case 0x2:
-                    ModRm((r1, r2) => (uint)(r2 + imm8 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 + imm + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), registerType, registerType, false);
                     break;
                 case 0x3:
-                    ModRm((r1, r2) => (uint)(r2 - imm8 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 - imm - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), registerType, registerType, false);
                     break;
                 case 0x4:
-                    ModRm((r1, r2) => (uint)(r2 & imm8), RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 & imm), registerType, registerType, false);
                     break;
                 case 0x5:
-                    ModRm((r1, r2) => (uint)(r2 - imm8), RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 - imm), registerType, registerType, false);
                     break;
                 case 0x6:
-                    ModRm((r1, r2) => (uint)(r2 ^ imm8), RegisterType.reg8, RegisterType.reg8, false);
+                    ModRm((r1, r2) => (uint)(r2 ^ imm), registerType, registerType, false);
                     break;
                 case 0x7:
-                    ModRmNoReturn((r1, r2) => (uint)(r2 - imm8), RegisterType.reg8, RegisterType.reg8);
+                    ModRmNoReturn((r1, r2) => (uint)(r2 - imm), registerType, registerType);
                     break;
                 default:
-                    throw new NotImplementedException($"0x80 {opcode} not implemented");
+                    throw new NotImplementedException($"{instruction} {opcode} not implemented");
             }
             ip += 2;
         }
