@@ -204,6 +204,9 @@
     <Content Include="TestAsm\PushPop16.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestAsm\SbbBlImm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\Xor16Imm16.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
