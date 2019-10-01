@@ -496,22 +496,32 @@ namespace x86il
 
         private void Handle0x80()
         {
-            Handle0x8X(RegisterType.reg8, "0x80");
+            Handle0x8X(RegisterType.reg8, 1, "0x80");
         }
 
-        private int GetImm(RegisterType registerType)
+        private void Handle0x81()
         {
-            if(registerType == RegisterType.reg8)
+            Handle0x8X(RegisterType.reg16, 2, "0x81");
+        }
+
+        private void Handle0x83()
+        {
+            Handle0x8X(RegisterType.reg16, 1, "0x83");
+        }
+
+        private int GetImm(int bytes)
+        {
+            if(bytes == 1)
             {
                 return memory[ip + 2];
             }
             return BinaryHelper.Read16Bit(memory,ip + 2);
         }
 
-        private void Handle0x8X(RegisterType registerType, string instruction)
+        private void Handle0x8X(RegisterType registerType, int immBytes, string instruction)
         {
             var modrm = memory[ip + 1];
-            int imm = GetImm(registerType);
+            int imm = GetImm(immBytes);
             var opcode = GetRegSegmentFromModRm(modrm);
             switch (opcode)
             {
@@ -542,7 +552,7 @@ namespace x86il
                 default:
                     throw new NotImplementedException($"{instruction} {opcode} not implemented");
             }
-            ip += 2;
+            ip += 1 + immBytes;
         }
 
 
@@ -877,6 +887,15 @@ namespace x86il
                         break;
                     case 0x80:
                         Handle0x80();
+                        break;
+                    case 0x81:
+                        Handle0x81();
+                        break;
+                    case 0x82:
+                        Handle0x80();
+                        break;
+                    case 0x83:
+                        Handle0x83();
                         break;
                     case 0x8e:
                         MovSegRM16();

@@ -579,5 +579,12 @@ namespace x86il.Tests
             var cpu = RunAsmTest("CmpBlImm8");
             Assert.AreEqual(true, cpu.flagsRegister.HasFlag(Flags.Zero));
         }
+
+        [Test]
+        public void ExecuteTestAdcBxImm8()
+        {
+            var cpu = RunAsmTest("AdcBxImm8");
+            Assert.AreEqual(13, cpu.GetRegister(Reg16.bx));
+        }
     }
 }
