@@ -18,15 +18,15 @@ namespace x86il
 
         public void PushValue(UInt16 Value)
         {
-            var sp = registers.Get(Reg16.sp);
-            BinaryHelper.Write16Bit(memory, (registers.Get(Segments.ss) << 4) + sp - 1, Value);
-            registers.Set(Reg16.sp, (UInt16)(sp - 2));
+            var sp = registers.Get(Reg16.sp) - 2;
+            BinaryHelper.Write16Bit(memory, (registers.Get(Segments.ss) << 4) + sp, Value);
+            registers.Set(Reg16.sp, (UInt16)(sp));
         }
 
         public UInt16 PopValue16()
         {
             var sp = registers.Get(Reg16.sp);
-            var ret = BinaryHelper.Read16Bit(memory, (registers.Get(Segments.ss) << 4) + sp + 1);
+            var ret = BinaryHelper.Read16Bit(memory, (registers.Get(Segments.ss) << 4) + sp);
             registers.Set(Reg16.sp, (UInt16)(sp + 2));
             return ret;
         }

@@ -509,6 +509,18 @@ namespace x86il
             Handle0x8X(RegisterType.reg16, 1, "0x83");
         }
 
+        private void RetnImm16()
+        {
+            var bytes = BinaryHelper.Read16Bit(memory, ip + 1);
+            Retn();
+            registers.Set(Reg16.sp, (UInt16)(registers.Get(Reg16.sp) + bytes));
+        }
+
+        private void Retn()
+        {
+            ip = stack.PopValue16();            
+        }
+
         private int GetImm(int bytes)
         {
             if(bytes == 1)
@@ -948,6 +960,9 @@ namespace x86il
                     case 0xbf:
                         Mov16Imm(Reg16.di);
                         break;
+                    case 0xc2:
+                        RetnImm16();
+                        break;
                     case 0xcd:
                         Interrupt();
                         break;
@@ -955,7 +970,7 @@ namespace x86il
                         Inc8();
                         break;
                     default:
-                        throw new NotImplementedException();
+                        throw new NotImplementedException($"Instruction not implemented: {memory[ip]}");
                 }
             }
         }

@@ -7,7 +7,7 @@ namespace x86il.Tests
     [TestFixture]
     public class InterpretCpuTests
     {
-        private InterpretCpu RunAsmTest(string filename)
+        private InterpretCpu RunAsmTest(string filename, Action<InterpretCpu> setup = null)
         {
             var filePath = TestContext.CurrentContext.TestDirectory + $"/TestAsm/{filename}";
             
@@ -16,9 +16,19 @@ namespace x86il.Tests
                 var compile = System.Diagnostics.Process.Start("nasm", $"{filePath}.asm -o {filePath}.o");
                 compile.WaitForExit();
             }
-            var memory = File.ReadAllBytes($"{filePath}.o");
+            var file = File.ReadAllBytes($"{filePath}.o");
+            var memory = new byte[65536];
+            file.CopyTo(memory,0);
+
             var cpu = new InterpretCpu(memory);
-            cpu.Execute(0, memory.Length);
+            cpu.SetRegister(Reg16.sp, 0xffff);
+
+            if (setup != null)
+            {
+                setup.Invoke(cpu);
+            }
+
+            cpu.Execute(0, file.Length);
             return cpu;
         }
         [Test]
@@ -121,7 +131,7 @@ namespace x86il.Tests
         {
             var memory = new Byte[] { 0xB8, 0x2A, 0x00, 0x8E, 0xC0, 0x06, 0x1F,0x00,0x00 };
             var cpu = new InterpretCpu(memory);
-            cpu.SetRegister(Reg16.sp, 8);
+            cpu.SetRegister(Reg16.sp, 9);
             cpu.Execute(0, 7);
             Assert.AreEqual(42, cpu.GetRegister(Segments.ds));
         }
@@ -585,6 +595,14 @@ namespace x86il.Tests
         {
             var cpu = RunAsmTest("AdcBxImm8");
             Assert.AreEqual(13, cpu.GetRegister(Reg16.bx));
+        }
+
+        [Test]
+        public void ExecuteTestRetnImm16()
+        {
+            var cpu = RunAsmTest("RetnImm16");
+            Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(8, cpu.GetRegister(Reg16.ax));
         }
     }
 }
