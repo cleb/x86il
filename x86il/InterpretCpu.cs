@@ -963,6 +963,9 @@ namespace x86il
                     case 0xc2:
                         RetnImm16();
                         break;
+                    case 0xc3:
+                        Retn();
+                        break;
                     case 0xcd:
                         Interrupt();
                         break;
