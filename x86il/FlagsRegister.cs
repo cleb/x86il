@@ -63,5 +63,14 @@ namespace x86il
         {
             return CpuFlags.HasFlag(flag);
         }
+
+        public void SetFlagsFromInputAndResult(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        {
+            CheckZero(result, input1, input2);
+            CheckCarry(result, input1, input2, bytes);
+            CheckOverflow(result, input1, input2, bytes);
+            CheckSign((UInt32)result, bytes);
+            CheckParity(result);
+        }
     }
 }
