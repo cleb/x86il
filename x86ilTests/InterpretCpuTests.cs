@@ -620,5 +620,13 @@ namespace x86il.Tests
             Assert.AreEqual(0xdead, cpu.GetRegister(Segments.es));
             Assert.AreEqual(0xbeef, cpu.GetRegister(Reg16.di));
         }
+
+        [Test]
+        public void ExecuteTestLds()
+        {
+            var cpu = RunAsmTest("Lds");
+            Assert.AreEqual(0xdead, cpu.GetRegister(Segments.ds));
+            Assert.AreEqual(0xbeef, cpu.GetRegister(Reg16.di));
+        }
     }
 }

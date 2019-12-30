@@ -45,6 +45,14 @@ namespace x86il
         {
 
             var executor = GetExecutor(r1Type);
+            ModRm(function, executor, rmFirst, useResult);
+        }
+
+        private void ModRm(Func<ushort, uint, uint> function,
+            ModRmExecutor executor,
+            bool rmFirst = true, 
+            bool useResult = true)
+        {
             decoder.Decode(ip);
             executor.Execute(function, rmFirst, useResult);
             ip += decoder.IpShift;
@@ -406,15 +414,24 @@ namespace x86il
 
         private void Les()
         {
-            decoder.Decode(ip);
-            executorSegment32b.Execute((dv, sv) =>
+            ModRm((dv, sv) =>
             {
                 var es = sv >> 16;
                 registers.Set(Segments.es, (UInt16) es);
                 var di = sv & 0xffff;
                 return di;
-            }, true, true);
-            ip += decoder.IpShift;
+            }, executorSegment32b);
+        }
+
+        private void Lds()
+        {
+            ModRm((dv, sv) =>
+            {
+                var ds = sv >> 16;
+                registers.Set(Segments.ds, (UInt16)ds);
+                var di = sv & 0xffff;
+                return di;
+            }, executorSegment32b);
         }
 
         private int GetImm(int bytes)
@@ -864,6 +881,9 @@ namespace x86il
                         break;
                     case 0xc4:
                         Les();
+                        break;
+                    case 0xc5:
+                        Lds();
                         break;
                     case 0xcd:
                         Interrupt();
