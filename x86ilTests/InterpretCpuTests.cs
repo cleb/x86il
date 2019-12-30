@@ -628,5 +628,12 @@ namespace x86il.Tests
             Assert.AreEqual(0xdead, cpu.GetRegister(Segments.ds));
             Assert.AreEqual(0xbeef, cpu.GetRegister(Reg16.di));
         }
+
+        [Test]
+        public void ExecuteTestMovImm8()
+        {
+            var cpu = RunAsmTest("MovImm8");
+            Assert.AreEqual(0x4, cpu.GetByteFromMemory(4));
+        }
     }
 }

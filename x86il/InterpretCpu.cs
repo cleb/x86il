@@ -38,6 +38,11 @@ namespace x86il
             return BinaryHelper.Read16Bit(memory, address);
         }
 
+        public byte GetByteFromMemory(int address)
+        {
+            return memory[address];
+        }
+
         private void ModRm(Func<UInt16, UInt32, UInt32> function,
             RegisterType r1Type = RegisterType.reg8,
             bool rmFirst = true,
@@ -113,6 +118,14 @@ namespace x86il
             registers.Set(register, memory[ip+1]);
             ip += 2;
         }
+
+        public void Mov8Imm8()
+        {
+            byte imm8 = memory[ip + 2];
+            ModRm((x, y) => imm8, RegisterType.reg8, false);
+            ip++;
+        }
+
         public void Mov16Imm(Reg16 register)
         {
             registers.Set(register, GetUInt16FromMemory(ip + 1));
@@ -884,6 +897,9 @@ namespace x86il
                         break;
                     case 0xc5:
                         Lds();
+                        break;
+                    case 0xc6:
+                        Mov8Imm8();
                         break;
                     case 0xcd:
                         Interrupt();
