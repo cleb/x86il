@@ -55,6 +55,7 @@
     <Compile Include="IRegisters.cs" />
     <Compile Include="ModRMDecoder.cs" />
     <Compile Include="ModRmExecutor.cs" />
+    <Compile Include="ModRmExecutorSegment32b.cs" />
     <Compile Include="ModRmExecutorSegment.cs" />
     <Compile Include="ModRmExecutor8.cs" />
     <Compile Include="ModRmExecutor16.cs" />

@@ -14,6 +14,7 @@ namespace x86il
         private ModRmExecutor executor8;
         private ModRmExecutor executor16;
         private ModRmExecutor executorSegment;
+        private ModRmExecutor executorSegment32b;
         int ip = 0;
         byte[] memory;
         Dictionary<Byte, Action> IntHandlers;
@@ -29,6 +30,7 @@ namespace x86il
             executor8 = new ModRmExecutor8(registers, flagsRegister, memory, decoder);
             executor16 = new ModRmExecutor16(registers, flagsRegister, memory, decoder);
             executorSegment = new ModRmExecutorSegment(registers, flagsRegister, memory, decoder);
+            executorSegment32b = new ModRmExecutorSegment32b(registers, flagsRegister, memory, decoder);
         }
 
         private UInt16 GetUInt16FromMemory(int address)
@@ -36,7 +38,7 @@ namespace x86il
             return BinaryHelper.Read16Bit(memory, address);
         }
 
-        private void ModRm(Func<UInt16, UInt16, UInt32> function,
+        private void ModRm(Func<UInt16, UInt32, UInt32> function,
             RegisterType r1Type = RegisterType.reg8,
             bool rmFirst = true,
             bool useResult = true)
@@ -63,7 +65,7 @@ namespace x86il
         }
 
 
-        private void ModRmNoReturn(Func<UInt16, UInt16, UInt32> function,
+        private void ModRmNoReturn(Func<UInt16, UInt32, UInt32> function,
             RegisterType r1Type = RegisterType.reg8)
         {
             ModRm(function,
@@ -400,6 +402,19 @@ namespace x86il
         private void Retn()
         {
             ip = stack.PopValue16();            
+        }
+
+        private void Les()
+        {
+            decoder.Decode(ip);
+            executorSegment32b.Execute((dv, sv) =>
+            {
+                var es = sv >> 16;
+                registers.Set(Segments.es, (UInt16) es);
+                var di = sv & 0xffff;
+                return di;
+            }, true, true);
+            ip += decoder.IpShift;
         }
 
         private int GetImm(int bytes)
@@ -846,6 +861,9 @@ namespace x86il
                         break;
                     case 0xc3:
                         Retn();
+                        break;
+                    case 0xc4:
+                        Les();
                         break;
                     case 0xcd:
                         Interrupt();

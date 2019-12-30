@@ -19,7 +19,7 @@ namespace x86il
             BinaryHelper.Write16Bit(memory, decoder.Address, (UInt16)res);
         }
 
-        public override ushort ReadMemory()
+        public override uint ReadMemory()
         {
             return BinaryHelper.Read16Bit(memory, decoder.Address);
         }

@@ -15,7 +15,7 @@ namespace x86il
         protected override RegisterType RegisterType => RegisterType.reg8;
         protected override RegisterType ComplementRegisterType => RegisterType.reg8;
 
-        public override ushort ReadMemory()
+        public override uint ReadMemory()
         {
             return memory[decoder.Address];
         }

@@ -21,15 +21,15 @@ namespace x86il
             }
         }
 
-        public void CheckZero(Int32 result, UInt16 input1, UInt16 input2)
+        public void CheckZero(Int32 result, UInt32 input1, UInt32 input2)
         {
             SetFlagBasedOnResult(Flags.Zero, result == 0);
         }
-        public void CheckCarry(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        public void CheckCarry(Int32 result, UInt32 input1, UInt32 input2, int bytes = 1)
         {
             SetFlagBasedOnResult(Flags.Carry, result >= (bytes << 8) || result < 0);
         }
-        public void CheckOverflow(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        public void CheckOverflow(Int32 result, UInt32 input1, UInt32 input2, int bytes = 1)
         {
             Int16 adjusted1 = (Int16)(bytes == 1 ? (sbyte)input1 : (Int16)input1);
             Int16 adjusted2 = (Int16)(bytes == 1 ? (sbyte)input2 : (Int16)input2);
@@ -64,7 +64,7 @@ namespace x86il
             return CpuFlags.HasFlag(flag);
         }
 
-        public void SetFlagsFromInputAndResult(Int32 result, UInt16 input1, UInt16 input2, int bytes = 1)
+        public void SetFlagsFromInputAndResult(Int32 result, UInt32 input1, UInt32 input2, int bytes = 1)
         {
             CheckZero(result, input1, input2);
             CheckCarry(result, input1, input2, bytes);

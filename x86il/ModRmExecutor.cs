@@ -16,7 +16,7 @@ namespace x86il
         protected abstract RegisterType RegisterType { get; }
         protected abstract RegisterType ComplementRegisterType { get; }
 
-        public void RmResult(Func<UInt16, UInt16, UInt32> function, bool rmFirst, bool useResult)
+        public void RmResult(Func<UInt16, UInt32, UInt32> function, bool rmFirst, bool useResult)
         {
             ushort r1Value = registers.Get(decoder.R1, RegisterType);
             var memValue = ReadMemory();
@@ -42,7 +42,7 @@ namespace x86il
 
         public abstract void WriteMemoryResult(UInt16 res);
 
-        public abstract ushort ReadMemory();
+        public abstract uint ReadMemory();
 
         public void RegFunc(uint res, bool rmFirst)
         {
@@ -58,7 +58,7 @@ namespace x86il
             decoder = dec;
         }
 
-        public void RegResult(Func<UInt16, UInt16, UInt32> function, bool rmFirst, bool useResult)
+        public void RegResult(Func<UInt16, UInt32, UInt32> function, bool rmFirst, bool useResult)
         {
             var r1Value = registers.Get(decoder.R1, RegisterType);
             var r2Value = registers.Get(decoder.R2, ComplementRegisterType);
@@ -70,7 +70,7 @@ namespace x86il
             }
         }
 
-        public void Execute(Func<UInt16, UInt16, UInt32> function, bool rmFirst, bool useResult)
+        public void Execute(Func<UInt16, UInt32, UInt32> function, bool rmFirst, bool useResult)
         {
             if (decoder.Type == ModRMType.RM)
             {

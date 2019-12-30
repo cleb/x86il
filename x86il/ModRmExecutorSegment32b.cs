@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace x86il
 {
-    public class ModRmExecutor16 : ModRmExecutor
+    public class ModRmExecutorSegment32b : ModRmExecutor
     {
         protected override RegisterType RegisterType => RegisterType.reg16;
-        protected override RegisterType ComplementRegisterType => RegisterType.reg16;
-        public ModRmExecutor16(Registers regs, FlagsRegister flags, byte[] mem, ModRMDecoder modRm) : base(regs, flags, mem, modRm)
+        protected override RegisterType ComplementRegisterType => RegisterType.segment;
+        public ModRmExecutorSegment32b(Registers regs, FlagsRegister flags, byte[] mem, ModRMDecoder modRm) : base(regs, flags, mem, modRm)
         {
         }
 
@@ -21,7 +21,7 @@ namespace x86il
 
         public override uint ReadMemory()
         {
-            return BinaryHelper.Read16Bit(memory, decoder.Address);
+            return BinaryHelper.Read32Bit(memory, decoder.Address);
         }
     }
 }

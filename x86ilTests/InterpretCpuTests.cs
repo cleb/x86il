@@ -612,5 +612,13 @@ namespace x86il.Tests
             Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
             Assert.AreEqual(15, cpu.GetRegister(Reg16.ax));
         }
+
+        [Test]
+        public void ExecuteTestLes()
+        {
+            var cpu = RunAsmTest("Les");
+            Assert.AreEqual(0xdead, cpu.GetRegister(Segments.es));
+            Assert.AreEqual(0xbeef, cpu.GetRegister(Reg16.di));
+        }
     }
 }
