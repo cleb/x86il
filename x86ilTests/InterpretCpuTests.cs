@@ -635,5 +635,13 @@ namespace x86il.Tests
             var cpu = RunAsmTest("MovImm8");
             Assert.AreEqual(0x4, cpu.GetByteFromMemory(4));
         }
+
+        [Test]
+        public void ExecuteTestMovImm16()
+        {
+            var cpu = RunAsmTest("MovImm16");
+            Assert.AreEqual(0xef, cpu.GetByteFromMemory(4));
+            Assert.AreEqual(0xbe, cpu.GetByteFromMemory(5));
+        }
     }
 }

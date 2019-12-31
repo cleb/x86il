@@ -126,6 +126,13 @@ namespace x86il
             ip++;
         }
 
+        public void Mov16Imm16()
+        {
+            UInt16 imm16 = BinaryHelper.Read16Bit(memory,ip + 4);
+            ModRm((x, y) => imm16, RegisterType.reg16, false);
+            ip+=2;
+        }
+
         public void Mov16Imm(Reg16 register)
         {
             registers.Set(register, GetUInt16FromMemory(ip + 1));
@@ -900,6 +907,9 @@ namespace x86il
                         break;
                     case 0xc6:
                         Mov8Imm8();
+                        break;
+                    case 0xc7:
+                        Mov16Imm16();
                         break;
                     case 0xcd:
                         Interrupt();
