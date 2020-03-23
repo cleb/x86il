@@ -158,6 +158,11 @@ namespace x86il
             ModRm((x, y) => y,RegisterType.segment);
         }
 
+        public void PopRM16()
+        {
+            ModRm((x, y) => stack.PopValue16(), RegisterType.reg16,false);
+        }
+
         public void Push(Segments seg)
         {
             stack.Push(seg);
@@ -844,6 +849,9 @@ namespace x86il
                         break;
                     case 0x8e:
                         MovSegRM16();
+                        break;
+                    case 0x8f:
+                        PopRM16();
                         break;
                     case 0xb0:
                         Mov8Imm(Reg8.al);

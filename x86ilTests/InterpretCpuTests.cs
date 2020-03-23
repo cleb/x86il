@@ -643,5 +643,13 @@ namespace x86il.Tests
             Assert.AreEqual(0xef, cpu.GetByteFromMemory(4));
             Assert.AreEqual(0xbe, cpu.GetByteFromMemory(5));
         }
+
+        [Test]
+        public void ExecuteTestPopRm16()
+        {
+            var cpu = RunAsmTest("PopRm16");
+            Assert.AreEqual(0xef, cpu.GetByteFromMemory(4));
+            Assert.AreEqual(0xbe, cpu.GetByteFromMemory(5));
+        }
     }
 }
