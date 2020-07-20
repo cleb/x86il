@@ -64,6 +64,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestAsm\Test8Rm82.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestAsm\Test8Rm8.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestAsm\MovImm16.asm">
       <Generator>nasm</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

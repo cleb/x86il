@@ -806,7 +806,7 @@ namespace x86il
                         });
                         break;
                     case 0x77:
-                        JumpIfAny(new List<Tuple<Flags,bool>> {
+                        JumpIfAny(new List<Tuple<Flags, bool>> {
                             new Tuple<Flags,bool>(Flags.Zero, false),
                             new Tuple<Flags,bool>(Flags.Carry, false)
                         });
@@ -847,12 +847,16 @@ namespace x86il
                     case 0x83:
                         Handle0x83();
                         break;
+                    case 0x84:
+                        ModRmNoReturn((ushort a, uint b) => a & b, RegisterType.reg8);
+                        break;
                     case 0x8e:
                         MovSegRM16();
                         break;
                     case 0x8f:
                         PopRM16();
                         break;
+
                     case 0xb0:
                         Mov8Imm(Reg8.al);
                         break;
