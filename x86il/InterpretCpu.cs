@@ -427,6 +427,24 @@ namespace x86il
                     case 0x91:
                         XchgWithAx(Reg16.cx);
                         break;
+                    case 0x92:
+                        XchgWithAx(Reg16.dx);
+                        break;
+                    case 0x93:
+                        XchgWithAx(Reg16.bx);
+                        break;
+                    case 0x94:
+                        XchgWithAx(Reg16.sp);
+                        break;
+                    case 0x95:
+                        XchgWithAx(Reg16.bp);
+                        break;
+                    case 0x96:
+                        XchgWithAx(Reg16.si);
+                        break;
+                    case 0x97:
+                        XchgWithAx(Reg16.di);
+                        break;
                     case 0xb0:
                         Mov8Imm(Reg8.al);
                         break;

@@ -716,7 +716,54 @@ namespace x86il.Tests
             var cpu = RunAsmTest("XchgAxCx");
             Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.cx));
             Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
-            
+        }
+        
+        [Test]
+        public void ExecuteTestXchgAxDx()
+        {
+            var cpu = RunAsmTest("XchgAxDx");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.dx));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
+        }
+        
+        [Test]
+        public void ExecuteTestXchgAxBx()
+        {
+            var cpu = RunAsmTest("XchgAxBx");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.bx));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
+        }
+        
+        [Test]
+        public void ExecuteTestXchgAxSp()
+        {
+            var cpu = RunAsmTest("XchgAxSp");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.sp));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
+        }
+        
+        [Test]
+        public void ExecuteTestXchgAxBp()
+        {
+            var cpu = RunAsmTest("XchgAxBp");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.bp));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
+        }
+        
+        [Test]
+        public void ExecuteTestXchgAxSi()
+        {
+            var cpu = RunAsmTest("XchgAxSi");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.si));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
+        }
+        
+        [Test]
+        public void ExecuteTestXchgAxDi()
+        {
+            var cpu = RunAsmTest("XchgAxDi");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.di));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
         }
     }
 }
