@@ -709,5 +709,14 @@ namespace x86il.Tests
             Assert.AreEqual(0xef, cpu.GetByteFromMemory(4));
             Assert.AreEqual(0xbe, cpu.GetByteFromMemory(5));
         }
+        
+        [Test]
+        public void ExecuteTestXchgAxCx()
+        {
+            var cpu = RunAsmTest("XchgAxCx");
+            Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.cx));
+            Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
+            
+        }
     }
 }

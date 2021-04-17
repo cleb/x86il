@@ -424,6 +424,9 @@ namespace x86il
                     case 0x90:
                         Nop();
                         break;
+                    case 0x91:
+                        XchgWithAx(Reg16.cx);
+                        break;
                     case 0xb0:
                         Mov8Imm(Reg8.al);
                         break;
@@ -892,6 +895,14 @@ namespace x86il
 
         private void Nop()
         {
+            _ip++;
+        }
+        
+        private void XchgWithAx(Reg16 register)
+        {
+            var tmp = GetRegister(register);
+            SetRegister(register, GetRegister(Reg16.ax));
+            SetRegister(Reg16.ax, tmp);
             _ip++;
         }
 
