@@ -401,25 +401,25 @@ namespace x86il
                                flagsRegister.HasFlag(Flags.Sign) == flagsRegister.HasFlag(Flags.Overflow));
                         break;
                     case 0x80:
-                        Handle0x80();
+                        Handle0X80();
                         break;
                     case 0x81:
-                        Handle0x81();
+                        Handle0X81();
                         break;
                     case 0x82:
-                        Handle0x80();
+                        Handle0X80();
                         break;
                     case 0x83:
-                        Handle0x83();
+                        Handle0X83();
                         break;
                     case 0x84:
                         ModRmNoReturn((a, b) => a & b);
                         break;
                     case 0x8e:
-                        MovSegRM16();
+                        MovSegRm16();
                         break;
                     case 0x8f:
-                        PopRM16();
+                        PopRm16();
                         break;
                     case 0x90:
                         Nop();
@@ -559,33 +559,33 @@ namespace x86il
             return registers.Get(register);
         }
 
-        public void Mov8Imm(Reg8 register)
+        private void Mov8Imm(Reg8 register)
         {
             registers.Set(register, _memory[_ip + 1]);
             _ip += 2;
         }
 
-        public void Mov8Imm8()
+        private void Mov8Imm8()
         {
             var imm8 = _memory[_ip + 2];
             ModRm((x, y) => imm8, RegisterType.reg8, false);
             _ip++;
         }
 
-        public void Mov16Imm16()
+        private void Mov16Imm16()
         {
             var imm16 = BinaryHelper.Read16Bit(_memory, _ip + 4);
             ModRm((x, y) => imm16, RegisterType.reg16, false);
             _ip += 2;
         }
 
-        public void Mov16Imm(Reg16 register)
+        private void Mov16Imm(Reg16 register)
         {
             registers.Set(register, GetUInt16FromMemory(_ip + 1));
             _ip += 3;
         }
 
-        public void Interrupt()
+        private void Interrupt()
         {
             if (IntHandlers.ContainsKey(_memory[_ip + 1]))
             {
@@ -599,104 +599,104 @@ namespace x86il
         }
 
 
-        public void MovSegRM16()
+        private void MovSegRm16()
         {
             ModRm((x, y) => y, RegisterType.segment);
         }
 
-        public void PopRM16()
+        private void PopRm16()
         {
             ModRm((x, y) => stack.PopValue16(), RegisterType.reg16, false);
         }
 
-        public void Push(Segments seg)
+        private void Push(Segments seg)
         {
             stack.Push(seg);
             _ip++;
         }
 
-        public void Push(Reg16 reg)
+        private void Push(Reg16 reg)
         {
             stack.Push(reg);
             _ip++;
         }
 
-        public void Pop(Segments seg)
+        private void Pop(Segments seg)
         {
             stack.Pop(seg);
             _ip++;
         }
 
-        public void Pop(Reg16 reg)
+        private void Pop(Reg16 reg)
         {
             stack.Pop(reg);
             _ip++;
         }
 
-        public void Add8ModRm(bool rmFirst = false)
+        private void Add8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r1 + r2), RegisterType.reg8, rmFirst);
         }
 
-        public void Add16ModRm(bool rmFirst = false)
+        private void Add16ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => r1 + r2, RegisterType.reg16, rmFirst);
         }
 
-        public void AddImm8(Reg8 reg)
+        private void AddImm8(Reg8 reg)
         {
             registers.Set(reg, (byte) (registers.Get(reg) + _memory[_ip + 1]));
             _ip += 2;
         }
 
-        public void OrImm8(Reg8 reg)
+        private void OrImm8(Reg8 reg)
         {
             registers.Set(reg, (byte) (registers.Get(reg) | _memory[_ip + 1]));
             _ip += 2;
         }
 
-        public void OrImm16(Reg16 reg)
+        private void OrImm16(Reg16 reg)
         {
             registers.Set(reg, (ushort) (registers.Get(reg) | BinaryHelper.Read16Bit(_memory, _ip + 1)));
             _ip += 2;
         }
 
-        public void Or8ModRm(bool rmFirst = false)
+        private void Or8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r1 | r2), RegisterType.reg8, rmFirst);
         }
 
-        public void Or16ModRm(bool rmFirst = false)
+        private void Or16ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r1 | r2), RegisterType.reg16, rmFirst);
         }
 
-        public void Add16Imm16(Reg16 reg)
+        private void Add16Imm16(Reg16 reg)
         {
             registers.Set(reg, (ushort) (registers.Get(reg) + GetUInt16FromMemory(_ip + 1)));
             _ip += 3;
         }
 
-        public void Adc8ModRm(bool rmFirst = false)
+        private void Adc8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8,
                 rmFirst);
         }
 
-        public void Adc16ModRm(bool rmFirst = false)
+        private void Adc16ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (uint) (r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16,
                 rmFirst);
         }
 
-        public void Adc8Imm8(Reg8 reg)
+        private void Adc8Imm8(Reg8 reg)
         {
             registers.Set(reg,
                 (byte) (registers.Get(reg) + _memory[_ip + 1] + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
             _ip += 2;
         }
 
-        public void Adc16Imm16(Reg16 reg)
+        private void Adc16Imm16(Reg16 reg)
         {
             registers.Set(reg,
                 (ushort) (registers.Get(reg) + BinaryHelper.Read16Bit(_memory, _ip + 1) +
@@ -704,26 +704,26 @@ namespace x86il
             _ip += 3;
         }
 
-        public void Sbb8ModRm(bool rmFirst = false)
+        private void Sbb8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8,
                 rmFirst);
         }
 
-        public void Sbb16ModRm(bool rmFirst = false)
+        private void Sbb16ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (uint) (r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16,
                 rmFirst);
         }
 
-        public void Sbb8Imm8(Reg8 reg)
+        private void Sbb8Imm8(Reg8 reg)
         {
             registers.Set(reg,
                 (byte) (registers.Get(reg) - _memory[_ip + 1] - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
             _ip += 2;
         }
 
-        public void Sbb16Imm16(Reg16 reg)
+        private void Sbb16Imm16(Reg16 reg)
         {
             registers.Set(reg,
                 (ushort) (registers.Get(reg) - BinaryHelper.Read16Bit(_memory, _ip + 1) -
@@ -731,83 +731,83 @@ namespace x86il
             _ip += 3;
         }
 
-        public void AndImm8(Reg8 reg)
+        private void AndImm8(Reg8 reg)
         {
             registers.Set(reg, (byte) (registers.Get(reg) & _memory[_ip + 1]));
             _ip += 2;
         }
 
-        public void AndImm16(Reg16 reg)
+        private void AndImm16(Reg16 reg)
         {
             registers.Set(reg, (ushort) (registers.Get(reg) & BinaryHelper.Read16Bit(_memory, _ip + 1)));
             _ip += 3;
         }
 
-        public void And8ModRm(bool rmFirst = false)
+        private void And8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r1 & r2), RegisterType.reg8, rmFirst);
         }
 
-        public void And16ModRm(bool rmFirst = false)
+        private void And16ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r1 & r2), RegisterType.reg16, rmFirst);
         }
 
-        public void Sub8ModRm(bool rmFirst = false)
+        private void Sub8ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => (ushort) (r2 - r1), RegisterType.reg8, rmFirst);
         }
 
-        public void Sub16ModRm(bool rmFirst = false)
+        private void Sub16ModRm(bool rmFirst = false)
         {
             ModRm((r1, r2) => r2 - r1, RegisterType.reg16, rmFirst);
         }
 
-        public void Sub8Imm8(Reg8 reg)
+        private void Sub8Imm8(Reg8 reg)
         {
             registers.Set(reg, (byte) (registers.Get(reg) - _memory[_ip + 1]));
             _ip += 2;
         }
 
-        public void Sub16Imm16(Reg16 reg)
+        private void Sub16Imm16(Reg16 reg)
         {
             registers.Set(reg, (ushort) (registers.Get(reg) - BinaryHelper.Read16Bit(_memory, _ip + 1)));
             _ip += 3;
         }
 
-        public void XorRm8(bool rmFirst = false)
+        private void XorRm8(bool rmFirst = false)
         {
             ModRm((x, y) => (ushort) (x ^ y), RegisterType.reg8, rmFirst);
         }
 
-        public void XorRm16(bool rmFirst = false)
+        private void XorRm16(bool rmFirst = false)
         {
             ModRm((x, y) => x ^ y, RegisterType.reg16, rmFirst);
         }
 
-        public void Xor8Imm8(Reg8 reg)
+        private void Xor8Imm8(Reg8 reg)
         {
             registers.Set(reg, (byte) (registers.Get(reg) ^ _memory[_ip + 1]));
             _ip += 2;
         }
 
-        public void Xor16Imm16(Reg16 reg)
+        private void Xor16Imm16(Reg16 reg)
         {
             registers.Set(reg, (ushort) (registers.Get(reg) ^ BinaryHelper.Read16Bit(_memory, _ip + 1)));
             _ip += 3;
         }
 
-        public void Cmp8ModRm(bool rmFirst = false)
+        private void Cmp8ModRm(bool rmFirst = false)
         {
             ModRmNoReturn((r1, r2) => (ushort) (r2 - r1));
         }
 
-        public void Cmp16ModRm(bool rmFirst = false)
+        private void Cmp16ModRm(bool rmFirst = false)
         {
             ModRmNoReturn((r1, r2) => (ushort) (r2 - r1), RegisterType.reg16);
         }
 
-        public void Cmp8Imm8(Reg8 reg)
+        private void Cmp8Imm8(Reg8 reg)
         {
             var regValue = registers.Get(reg);
             var immValue = _memory[_ip + 1];
@@ -815,7 +815,7 @@ namespace x86il
             _ip += 2;
         }
 
-        public void Cmp16Imm16(Reg16 reg)
+        private void Cmp16Imm16(Reg16 reg)
         {
             var regValue = registers.Get(reg);
             var immValue = BinaryHelper.Read16Bit(_memory, _ip + 1);
@@ -823,12 +823,12 @@ namespace x86il
             _ip += 3;
         }
 
-        public void Inc8()
+        private void Inc8()
         {
             ModRm((r1, r2) => r2 + 1, RegisterType.reg8, false);
         }
 
-        public void Inc16(Reg16 reg)
+        private void Inc16(Reg16 reg)
         {
             var value = registers.Get(reg);
             value++;
@@ -837,7 +837,7 @@ namespace x86il
             _ip++;
         }
 
-        public void Dec16(Reg16 reg)
+        private void Dec16(Reg16 reg)
         {
             var value = registers.Get(reg);
             value--;
@@ -846,7 +846,7 @@ namespace x86il
             _ip++;
         }
 
-        public void Pusha()
+        private void Pusha()
         {
             var sp = registers.Get(Reg16.sp);
             stack.Push(Reg16.ax, Reg16.cx, Reg16.dx, Reg16.bx);
@@ -855,7 +855,7 @@ namespace x86il
             _ip++;
         }
 
-        public void Popa()
+        private void Popa()
         {
             stack.Pop(Reg16.di, Reg16.si, Reg16.bp);
             var sp = stack.PopValue16();
@@ -864,7 +864,7 @@ namespace x86il
             _ip++;
         }
 
-        public void JumpIf(bool condition)
+        private void JumpIf(bool condition)
         {
             if (condition)
             {
@@ -875,7 +875,7 @@ namespace x86il
             _ip += 2;
         }
 
-        public void JumpIf(Flags flag, bool state)
+        private void JumpIf(Flags flag, bool state)
         {
             JumpIf(FlagIsInState(flag, state));
         }
@@ -885,7 +885,7 @@ namespace x86il
             return !(flagsRegister.HasFlag(flag) ^ state);
         }
 
-        public void JumpIfAny(List<Tuple<Flags, bool>> conditions)
+        private void JumpIfAny(List<Tuple<Flags, bool>> conditions)
         {
             JumpIf(conditions.Exists(x => FlagIsInState(x.Item1, x.Item2)));
         }
@@ -895,19 +895,19 @@ namespace x86il
             _ip++;
         }
 
-        private void Handle0x80()
+        private void Handle0X80()
         {
-            Handle0x8X(RegisterType.reg8, 1, "0x80");
+            Handle0X8X(RegisterType.reg8, 1, "0x80");
         }
 
-        private void Handle0x81()
+        private void Handle0X81()
         {
-            Handle0x8X(RegisterType.reg16, 2, "0x81");
+            Handle0X8X(RegisterType.reg16, 2, "0x81");
         }
 
-        private void Handle0x83()
+        private void Handle0X83()
         {
-            Handle0x8X(RegisterType.reg16, 1, "0x83");
+            Handle0X8X(RegisterType.reg16, 1, "0x83");
         }
 
         private void RetnImm16()
@@ -950,7 +950,7 @@ namespace x86il
             return BinaryHelper.Read16Bit(_memory, _ip + 2);
         }
 
-        private void Handle0x8X(RegisterType registerType, int immBytes, string instruction)
+        private void Handle0X8X(RegisterType registerType, int immBytes, string instruction)
         {
             var modrm = _memory[_ip + 1];
             var imm = GetImm(immBytes);
