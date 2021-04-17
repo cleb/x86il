@@ -3,521 +3,77 @@ using System.Collections.Generic;
 
 namespace x86il
 {
-
     public class InterpretCpu : ICpu
     {
-        public Registers registers;
+        private readonly ModRMDecoder _decoder;
+        private int _ip;
+        private readonly byte[] _memory;
+        private readonly ModRmExecutor executor16;
+        private readonly ModRmExecutor executor8;
+        private readonly ModRmExecutor executorSegment;
+        private readonly ModRmExecutor executorSegment32b;
         public FlagsRegister flagsRegister;
-        public Stack stack;
-        public Flags CpuFlags => flagsRegister.CpuFlags;
-        private ModRMDecoder decoder;
-        private ModRmExecutor executor8;
-        private ModRmExecutor executor16;
-        private ModRmExecutor executorSegment;
-        private ModRmExecutor executorSegment32b;
-        int ip = 0;
-        byte[] memory;
-        Dictionary<Byte, Action> IntHandlers;
+        private readonly Dictionary<byte, Action> IntHandlers;
+        private readonly Registers registers;
+        private readonly Stack stack;
 
         public InterpretCpu(byte[] mem)
         {
-            memory = mem;
+            _memory = mem;
             registers = new Registers();
             IntHandlers = new Dictionary<byte, Action>();
             flagsRegister = new FlagsRegister();
-            stack = new Stack(registers, memory);
-            decoder = new ModRMDecoder(memory, registers);
-            executor8 = new ModRmExecutor8(registers, flagsRegister, memory, decoder);
-            executor16 = new ModRmExecutor16(registers, flagsRegister, memory, decoder);
-            executorSegment = new ModRmExecutorSegment(registers, flagsRegister, memory, decoder);
-            executorSegment32b = new ModRmExecutorSegment32b(registers, flagsRegister, memory, decoder);
+            stack = new Stack(registers, _memory);
+            _decoder = new ModRMDecoder(_memory, registers);
+            executor8 = new ModRmExecutor8(registers, flagsRegister, _memory, _decoder);
+            executor16 = new ModRmExecutor16(registers, flagsRegister, _memory, _decoder);
+            executorSegment = new ModRmExecutorSegment(registers, flagsRegister, _memory, _decoder);
+            executorSegment32b = new ModRmExecutorSegment32b(registers, flagsRegister, _memory, _decoder);
         }
 
-        private UInt16 GetUInt16FromMemory(int address)
-        {
-            return BinaryHelper.Read16Bit(memory, address);
-        }
+        public Flags CpuFlags => flagsRegister.CpuFlags;
 
-        public byte GetByteFromMemory(int address)
-        {
-            return memory[address];
-        }
-
-        private void ModRm(Func<UInt16, UInt32, UInt32> function,
-            RegisterType r1Type = RegisterType.reg8,
-            bool rmFirst = true,
-            bool useResult = true)
-        {
-
-            var executor = GetExecutor(r1Type);
-            ModRm(function, executor, rmFirst, useResult);
-        }
-
-        private void ModRm(Func<ushort, uint, uint> function,
-            ModRmExecutor executor,
-            bool rmFirst = true, 
-            bool useResult = true)
-        {
-            decoder.Decode(ip);
-            executor.Execute(function, rmFirst, useResult);
-            ip += decoder.IpShift;
-        }
-
-        private ModRmExecutor GetExecutor(RegisterType r1Type)
-        {
-            switch (r1Type)
-            {
-                case RegisterType.reg8:
-                    return executor8;
-                case RegisterType.segment:
-                    return executorSegment;
-                case RegisterType.reg16:
-                default:
-                    return executor16;
-            }
-        }
-
-
-        private void ModRmNoReturn(Func<UInt16, UInt32, UInt32> function,
-            RegisterType r1Type = RegisterType.reg8)
-        {
-            ModRm(function,
-                r1Type,
-                true,
-                false);
-        }
-
-        public Byte GetRegister(Reg8 register)
-        {
-            return registers.Get(register);
-        }
-        public UInt16 GetRegister(Reg16 register)
-        {
-            return registers.Get(register);
-        }
-        public UInt16 GetRegister(Segments register)
+        public byte GetRegister(Reg8 register)
         {
             return registers.Get(register);
         }
 
-        public void SetRegister(Reg8 register, Byte value)
+        public ushort GetRegister(Reg16 register)
         {
-            registers.Set(register,value);
+            return registers.Get(register);
         }
-        public void SetRegister(Reg16 register, UInt16 value)
-        {
-            registers.Set(register, value);
-        }
-        public void SetRegister(Segments register, UInt16 value)
+
+        public void SetRegister(Reg8 register, byte value)
         {
             registers.Set(register, value);
         }
 
-        public void Mov8Imm(Reg8 register)
+        public void SetRegister(Reg16 register, ushort value)
         {
-            registers.Set(register, memory[ip+1]);
-            ip += 2;
+            registers.Set(register, value);
         }
 
-        public void Mov8Imm8()
+        public void SetRegister(Segments register, ushort value)
         {
-            byte imm8 = memory[ip + 2];
-            ModRm((x, y) => imm8, RegisterType.reg8, false);
-            ip++;
+            registers.Set(register, value);
         }
 
-        public void Mov16Imm16()
+        public byte GetInDs(ushort offset)
         {
-            UInt16 imm16 = BinaryHelper.Read16Bit(memory,ip + 4);
-            ModRm((x, y) => imm16, RegisterType.reg16, false);
-            ip+=2;
+            return _memory[(registers.Get(Segments.ds) << 4) + offset];
         }
 
-        public void Mov16Imm(Reg16 register)
-        {
-            registers.Set(register, GetUInt16FromMemory(ip + 1));
-            ip += 3;
-        }
-
-        public void Interrupt()
-        {
-            if (IntHandlers.ContainsKey(memory[ip + 1]))
-            {
-                IntHandlers[memory[ip + 1]]();
-                ip += 2;
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-        }
-            
-
-        public void MovSegRM16()
-        {
-            ModRm((x, y) => y,RegisterType.segment);
-        }
-
-        public void PopRM16()
-        {
-            ModRm((x, y) => stack.PopValue16(), RegisterType.reg16,false);
-        }
-
-        public void Push(Segments seg)
-        {
-            stack.Push(seg);
-            ip++;
-        }
-
-        public void Push(Reg16 reg)
-        {
-            stack.Push(reg);
-            ip++;
-        }
-
-        public void Pop(Segments seg)
-        {
-            stack.Pop(seg);
-            ip++;
-        }
-
-        public void Pop(Reg16 reg)
-        {
-            stack.Pop(reg);
-            ip++;
-        }
-
-        public Byte GetInDs(UInt16 offset)
-        {
-            return memory[(registers.Get(Segments.ds) << 4) + offset];
-        }
-        
-        public void SetInterruptHandler(Byte number, Action handler)
+        public void SetInterruptHandler(byte number, Action handler)
         {
             IntHandlers[number] = handler;
         }
 
-        public void Add8ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r1 + r2), RegisterType.reg8, rmFirst);
-        }
-        public void Add16ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt32)(r1 + r2), RegisterType.reg16, rmFirst);
-        }
-        public void AddImm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1]));
-            ip += 2;
-        }
-        public void OrImm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) | memory[ip + 1]));
-            ip += 2;
-        }
-        public void OrImm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) | BinaryHelper.Read16Bit(memory, ip + 1)));
-            ip += 2;
-        }
-        public void Or8ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r1 | r2), RegisterType.reg8, rmFirst);
-        }
-        public void Or16ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r1 | r2), RegisterType.reg16, rmFirst);
-        }
-
-        public void Add16Imm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) + GetUInt16FromMemory(ip + 1)));
-            ip += 3;
-        }
-        public void Adc8ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, rmFirst);
-        }
-        public void Adc16ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt32)(r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, rmFirst);
-        }
-        public void Adc8Imm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) + memory[ip + 1] + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
-            ip += 2;
-        }
-        public void Adc16Imm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) + BinaryHelper.Read16Bit(memory, ip + 1) + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
-            ip += 3;
-        }
-        public void Sbb8ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8, rmFirst);
-        }
-        public void Sbb16ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt32)(r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16, rmFirst);
-        }
-        public void Sbb8Imm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) - memory[ip + 1] - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
-            ip += 2;
-        }
-        public void Sbb16Imm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1) - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
-            ip += 3;
-        }
-        public void AndImm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) & memory[ip + 1]));
-            ip += 2;
-        }
-        public void AndImm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) & BinaryHelper.Read16Bit(memory, ip + 1)));
-            ip += 3;
-        }
-        public void And8ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r1 & r2), RegisterType.reg8, rmFirst);
-        }
-        public void And16ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r1 & r2), RegisterType.reg16, rmFirst);
-        }
-        public void Sub8ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg8, rmFirst);
-        }
-        public void Sub16ModRm(bool rmFirst = false)
-        {
-            ModRm((r1, r2) => (UInt32)(r2 - r1), RegisterType.reg16, rmFirst);
-        }
-        public void Sub8Imm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) - memory[ip + 1]));
-            ip += 2;
-        }
-        public void Sub16Imm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) - BinaryHelper.Read16Bit(memory, ip + 1)));
-            ip += 3;
-        }
-        public void XorRm8(bool rmFirst = false)
-        {
-            ModRm((x, y) => (UInt16)(x ^ y), RegisterType.reg8, rmFirst);
-        }
-
-        public void XorRm16(bool rmFirst = false)
-        {
-            ModRm((x, y) => (UInt32)(x ^ y), RegisterType.reg16,rmFirst);
-        }
-        public void Xor8Imm8(Reg8 reg)
-        {
-            registers.Set(reg, (byte)(registers.Get(reg) ^ memory[ip + 1]));
-            ip += 2;
-        }
-        public void Xor16Imm16(Reg16 reg)
-        {
-            registers.Set(reg, (UInt16)(registers.Get(reg) ^ BinaryHelper.Read16Bit(memory, ip + 1)));
-            ip += 3;
-        }
-        public void Cmp8ModRm(bool rmFirst = false)
-        {
-            ModRmNoReturn((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg8);
-        }
-        public void Cmp16ModRm(bool rmFirst = false)
-        {
-            ModRmNoReturn((r1, r2) => (UInt16)(r2 - r1), RegisterType.reg16);
-        }
-        public void Cmp8Imm8(Reg8 reg)
-        {
-            byte regValue = registers.Get(reg);
-            byte immValue = memory[ip + 1];
-            flagsRegister.SetFlagsFromInputAndResult(regValue - immValue, regValue, immValue);
-            ip += 2;
-        }
-        public void Cmp16Imm16(Reg16 reg)
-        {
-            ushort regValue = registers.Get(reg);
-            ushort immValue = BinaryHelper.Read16Bit(memory, ip + 1);
-            flagsRegister.SetFlagsFromInputAndResult(regValue - immValue, regValue, immValue);
-            ip += 3;
-        }
-        public void Inc8()
-        {
-            ModRm((r1, r2) => (UInt32)(r2 + 1), RegisterType.reg8, false);
-        }
-        public void Inc16(Reg16 reg)
-        {
-            var value = registers.Get(reg);
-            value++;
-            flagsRegister.SetFlagsFromInputAndResult(value, registers.Get(reg),0,2);
-            registers.Set(reg, value);
-            ip++;
-        }
-        public void Dec16(Reg16 reg)
-        {
-            var value = registers.Get(reg);
-            value--;
-            flagsRegister.SetFlagsFromInputAndResult(value, registers.Get(reg),0,2);
-            registers.Set(reg, value);
-            ip++;
-        }
-        public void Pusha()
-        {
-            var sp = registers.Get(Reg16.sp);
-            stack.Push(Reg16.ax, Reg16.cx, Reg16.dx, Reg16.bx);
-            stack.PushValue(sp);
-            stack.Push(Reg16.bp, Reg16.si, Reg16.di);
-            ip++;
-        }
-
-        public void Popa()
-        {
-            stack.Pop(Reg16.di, Reg16.si, Reg16.bp);
-            var sp = stack.PopValue16();
-            stack.Pop(Reg16.bx, Reg16.dx, Reg16.cx, Reg16.ax);
-            registers.Set(Reg16.sp, sp);
-            ip++;
-        }
-
-        public void JumpIf(bool condition)
-        {
-            if (condition)
-            {
-                ip += (char)memory[ip + 1] + 2;
-                return;
-            }
-            ip += 2;
-        }
-
-        public void JumpIf(Flags flag, bool state)
-        {
-            JumpIf(FlagIsInState(flag, state));
-        }
-
-        private bool FlagIsInState(Flags flag, bool state)
-        {
-            return !(flagsRegister.HasFlag(flag) ^ state);
-        }
-
-        public void JumpIfAny(List<Tuple<Flags,bool>> conditions)
-        {
-            JumpIf(conditions.Exists(x => FlagIsInState(x.Item1,x.Item2)));
-        }
-        
-        private void Nop()
-        {
-            ip++;
-        }
-
-        private void Handle0x80()
-        {
-            Handle0x8X(RegisterType.reg8, 1, "0x80");
-        }
-
-        private void Handle0x81()
-        {
-            Handle0x8X(RegisterType.reg16, 2, "0x81");
-        }
-
-        private void Handle0x83()
-        {
-            Handle0x8X(RegisterType.reg16, 1, "0x83");
-        }
-
-        private void RetnImm16()
-        {
-            var bytes = BinaryHelper.Read16Bit(memory, ip + 1);
-            Retn();
-            registers.Set(Reg16.sp, (UInt16)(registers.Get(Reg16.sp) + bytes));
-        }
-
-        private void Retn()
-        {
-            ip = stack.PopValue16();            
-        }
-
-        private void Les()
-        {
-            ModRm((dv, sv) =>
-            {
-                var es = sv >> 16;
-                registers.Set(Segments.es, (UInt16) es);
-                var di = sv & 0xffff;
-                return di;
-            }, executorSegment32b);
-        }
-
-        private void Lds()
-        {
-            ModRm((dv, sv) =>
-            {
-                var ds = sv >> 16;
-                registers.Set(Segments.ds, (UInt16)ds);
-                var di = sv & 0xffff;
-                return di;
-            }, executorSegment32b);
-        }
-
-        private int GetImm(int bytes)
-        {
-            if(bytes == 1)
-            {
-                return memory[ip + 2];
-            }
-            return BinaryHelper.Read16Bit(memory,ip + 2);
-        }
-
-        private void Handle0x8X(RegisterType registerType, int immBytes, string instruction)
-        {
-            var modrm = memory[ip + 1];
-            int imm = GetImm(immBytes);
-            var opcode = ModRMDecoder.GetRegSegmentFromModRm(modrm);
-            switch (opcode)
-            {
-                case 0x0:
-                    ModRm((r1, r2) => (uint)(r2 + imm),registerType, false);
-                    break;
-                case 0x1:
-                    ModRm((r1, r2) => (uint)(r2 | imm), registerType, false);
-                    break;
-                case 0x2:
-                    ModRm((r1, r2) => (uint)(r2 + imm + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), registerType, false);
-                    break;
-                case 0x3:
-                    ModRm((r1, r2) => (uint)(r2 - imm - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), registerType, false);
-                    break;
-                case 0x4:
-                    ModRm((r1, r2) => (uint)(r2 & imm), registerType, false);
-                    break;
-                case 0x5:
-                    ModRm((r1, r2) => (uint)(r2 - imm), registerType, false);
-                    break;
-                case 0x6:
-                    ModRm((r1, r2) => (uint)(r2 ^ imm), registerType, false);
-                    break;
-                case 0x7:
-                    ModRmNoReturn((r1, r2) => (uint)(r2 - imm), registerType);
-                    break;
-                default:
-                    throw new NotImplementedException($"{instruction} {opcode} not implemented");
-            }
-            ip += 1 + immBytes;
-        }
-
-
 
         public void Execute(int ipStart, int ipEnd)
         {
-            ip = ipStart;
-            while(ip < ipEnd)
-            {
-                switch (memory[ip])
+            _ip = ipStart;
+            while (_ip < ipEnd)
+                switch (_memory[_ip])
                 {
                     case 0x00:
                         Add8ModRm();
@@ -589,10 +145,10 @@ namespace x86il
                         Pop(Segments.ss);
                         break;
                     case 0x18:
-                        Sbb8ModRm(false);
+                        Sbb8ModRm();
                         break;
                     case 0x19:
-                        Sbb16ModRm(false);
+                        Sbb16ModRm();
                         break;
                     case 0x1A:
                         Sbb8ModRm(true);
@@ -631,10 +187,10 @@ namespace x86il
                         AndImm16(Reg16.ax);
                         break;
                     case 0x28:
-                        Sub8ModRm(false);
+                        Sub8ModRm();
                         break;
                     case 0x29:
-                        Sub16ModRm(false);
+                        Sub16ModRm();
                         break;
                     case 0x2A:
                         Sub8ModRm(true);
@@ -655,10 +211,10 @@ namespace x86il
                         XorRm16();
                         break;
                     case 0x32:
-                        XorRm8(false);
+                        XorRm8();
                         break;
                     case 0x33:
-                        XorRm16(false);
+                        XorRm16();
                         break;
                     case 0x34:
                         Xor8Imm8(Reg8.al);
@@ -805,15 +361,17 @@ namespace x86il
                         JumpIf(Flags.Zero, false);
                         break;
                     case 0x76:
-                        JumpIfAny(new List<Tuple<Flags, bool>> {
-                            new Tuple<Flags,bool>(Flags.Zero, true),
-                            new Tuple<Flags,bool>(Flags.Carry, true)
+                        JumpIfAny(new List<Tuple<Flags, bool>>
+                        {
+                            new Tuple<Flags, bool>(Flags.Zero, true),
+                            new Tuple<Flags, bool>(Flags.Carry, true)
                         });
                         break;
                     case 0x77:
-                        JumpIfAny(new List<Tuple<Flags, bool>> {
-                            new Tuple<Flags,bool>(Flags.Zero, false),
-                            new Tuple<Flags,bool>(Flags.Carry, false)
+                        JumpIfAny(new List<Tuple<Flags, bool>>
+                        {
+                            new Tuple<Flags, bool>(Flags.Zero, false),
+                            new Tuple<Flags, bool>(Flags.Carry, false)
                         });
                         break;
                     case 0x78:
@@ -835,10 +393,12 @@ namespace x86il
                         JumpIf(Flags.Sign, flagsRegister.HasFlag(Flags.Overflow));
                         break;
                     case 0x7E:
-                        JumpIf(FlagIsInState(Flags.Zero, true) || flagsRegister.HasFlag(Flags.Sign) != flagsRegister.HasFlag(Flags.Overflow));
+                        JumpIf(FlagIsInState(Flags.Zero, true) ||
+                               flagsRegister.HasFlag(Flags.Sign) != flagsRegister.HasFlag(Flags.Overflow));
                         break;
                     case 0x7F:
-                        JumpIf(FlagIsInState(Flags.Zero, false) && flagsRegister.HasFlag(Flags.Sign) == flagsRegister.HasFlag(Flags.Overflow));
+                        JumpIf(FlagIsInState(Flags.Zero, false) &&
+                               flagsRegister.HasFlag(Flags.Sign) == flagsRegister.HasFlag(Flags.Overflow));
                         break;
                     case 0x80:
                         Handle0x80();
@@ -853,7 +413,7 @@ namespace x86il
                         Handle0x83();
                         break;
                     case 0x84:
-                        ModRmNoReturn((ushort a, uint b) => a & b, RegisterType.reg8);
+                        ModRmNoReturn((a, b) => a & b);
                         break;
                     case 0x8e:
                         MovSegRM16();
@@ -937,9 +497,497 @@ namespace x86il
                         Inc8();
                         break;
                     default:
-                        throw new NotImplementedException($"Instruction not implemented: {memory[ip]}");
+                        throw new NotImplementedException($"Instruction not implemented: {_memory[_ip]}");
                 }
+        }
+
+        private ushort GetUInt16FromMemory(int address)
+        {
+            return BinaryHelper.Read16Bit(_memory, address);
+        }
+
+        public byte GetByteFromMemory(int address)
+        {
+            return _memory[address];
+        }
+
+        private void ModRm(Func<ushort, uint, uint> function,
+            RegisterType r1Type = RegisterType.reg8,
+            bool rmFirst = true,
+            bool useResult = true)
+        {
+            var executor = GetExecutor(r1Type);
+            ModRm(function, executor, rmFirst, useResult);
+        }
+
+        private void ModRm(Func<ushort, uint, uint> function,
+            ModRmExecutor executor,
+            bool rmFirst = true,
+            bool useResult = true)
+        {
+            _decoder.Decode(_ip);
+            executor.Execute(function, rmFirst, useResult);
+            _ip += _decoder.IpShift;
+        }
+
+        private ModRmExecutor GetExecutor(RegisterType r1Type)
+        {
+            switch (r1Type)
+            {
+                case RegisterType.reg8:
+                    return executor8;
+                case RegisterType.segment:
+                    return executorSegment;
+                case RegisterType.reg16:
+                default:
+                    return executor16;
             }
+        }
+
+
+        private void ModRmNoReturn(Func<ushort, uint, uint> function,
+            RegisterType r1Type = RegisterType.reg8)
+        {
+            ModRm(function,
+                r1Type,
+                true,
+                false);
+        }
+
+        public ushort GetRegister(Segments register)
+        {
+            return registers.Get(register);
+        }
+
+        public void Mov8Imm(Reg8 register)
+        {
+            registers.Set(register, _memory[_ip + 1]);
+            _ip += 2;
+        }
+
+        public void Mov8Imm8()
+        {
+            var imm8 = _memory[_ip + 2];
+            ModRm((x, y) => imm8, RegisterType.reg8, false);
+            _ip++;
+        }
+
+        public void Mov16Imm16()
+        {
+            var imm16 = BinaryHelper.Read16Bit(_memory, _ip + 4);
+            ModRm((x, y) => imm16, RegisterType.reg16, false);
+            _ip += 2;
+        }
+
+        public void Mov16Imm(Reg16 register)
+        {
+            registers.Set(register, GetUInt16FromMemory(_ip + 1));
+            _ip += 3;
+        }
+
+        public void Interrupt()
+        {
+            if (IntHandlers.ContainsKey(_memory[_ip + 1]))
+            {
+                IntHandlers[_memory[_ip + 1]]();
+                _ip += 2;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+
+        public void MovSegRM16()
+        {
+            ModRm((x, y) => y, RegisterType.segment);
+        }
+
+        public void PopRM16()
+        {
+            ModRm((x, y) => stack.PopValue16(), RegisterType.reg16, false);
+        }
+
+        public void Push(Segments seg)
+        {
+            stack.Push(seg);
+            _ip++;
+        }
+
+        public void Push(Reg16 reg)
+        {
+            stack.Push(reg);
+            _ip++;
+        }
+
+        public void Pop(Segments seg)
+        {
+            stack.Pop(seg);
+            _ip++;
+        }
+
+        public void Pop(Reg16 reg)
+        {
+            stack.Pop(reg);
+            _ip++;
+        }
+
+        public void Add8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r1 + r2), RegisterType.reg8, rmFirst);
+        }
+
+        public void Add16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => r1 + r2, RegisterType.reg16, rmFirst);
+        }
+
+        public void AddImm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte) (registers.Get(reg) + _memory[_ip + 1]));
+            _ip += 2;
+        }
+
+        public void OrImm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte) (registers.Get(reg) | _memory[_ip + 1]));
+            _ip += 2;
+        }
+
+        public void OrImm16(Reg16 reg)
+        {
+            registers.Set(reg, (ushort) (registers.Get(reg) | BinaryHelper.Read16Bit(_memory, _ip + 1)));
+            _ip += 2;
+        }
+
+        public void Or8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r1 | r2), RegisterType.reg8, rmFirst);
+        }
+
+        public void Or16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r1 | r2), RegisterType.reg16, rmFirst);
+        }
+
+        public void Add16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (ushort) (registers.Get(reg) + GetUInt16FromMemory(_ip + 1)));
+            _ip += 3;
+        }
+
+        public void Adc8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8,
+                rmFirst);
+        }
+
+        public void Adc16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (uint) (r1 + r2 + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16,
+                rmFirst);
+        }
+
+        public void Adc8Imm8(Reg8 reg)
+        {
+            registers.Set(reg,
+                (byte) (registers.Get(reg) + _memory[_ip + 1] + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
+            _ip += 2;
+        }
+
+        public void Adc16Imm16(Reg16 reg)
+        {
+            registers.Set(reg,
+                (ushort) (registers.Get(reg) + BinaryHelper.Read16Bit(_memory, _ip + 1) +
+                          (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
+            _ip += 3;
+        }
+
+        public void Sbb8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg8,
+                rmFirst);
+        }
+
+        public void Sbb16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (uint) (r2 - r1 - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), RegisterType.reg16,
+                rmFirst);
+        }
+
+        public void Sbb8Imm8(Reg8 reg)
+        {
+            registers.Set(reg,
+                (byte) (registers.Get(reg) - _memory[_ip + 1] - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
+            _ip += 2;
+        }
+
+        public void Sbb16Imm16(Reg16 reg)
+        {
+            registers.Set(reg,
+                (ushort) (registers.Get(reg) - BinaryHelper.Read16Bit(_memory, _ip + 1) -
+                          (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)));
+            _ip += 3;
+        }
+
+        public void AndImm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte) (registers.Get(reg) & _memory[_ip + 1]));
+            _ip += 2;
+        }
+
+        public void AndImm16(Reg16 reg)
+        {
+            registers.Set(reg, (ushort) (registers.Get(reg) & BinaryHelper.Read16Bit(_memory, _ip + 1)));
+            _ip += 3;
+        }
+
+        public void And8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r1 & r2), RegisterType.reg8, rmFirst);
+        }
+
+        public void And16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r1 & r2), RegisterType.reg16, rmFirst);
+        }
+
+        public void Sub8ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => (ushort) (r2 - r1), RegisterType.reg8, rmFirst);
+        }
+
+        public void Sub16ModRm(bool rmFirst = false)
+        {
+            ModRm((r1, r2) => r2 - r1, RegisterType.reg16, rmFirst);
+        }
+
+        public void Sub8Imm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte) (registers.Get(reg) - _memory[_ip + 1]));
+            _ip += 2;
+        }
+
+        public void Sub16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (ushort) (registers.Get(reg) - BinaryHelper.Read16Bit(_memory, _ip + 1)));
+            _ip += 3;
+        }
+
+        public void XorRm8(bool rmFirst = false)
+        {
+            ModRm((x, y) => (ushort) (x ^ y), RegisterType.reg8, rmFirst);
+        }
+
+        public void XorRm16(bool rmFirst = false)
+        {
+            ModRm((x, y) => x ^ y, RegisterType.reg16, rmFirst);
+        }
+
+        public void Xor8Imm8(Reg8 reg)
+        {
+            registers.Set(reg, (byte) (registers.Get(reg) ^ _memory[_ip + 1]));
+            _ip += 2;
+        }
+
+        public void Xor16Imm16(Reg16 reg)
+        {
+            registers.Set(reg, (ushort) (registers.Get(reg) ^ BinaryHelper.Read16Bit(_memory, _ip + 1)));
+            _ip += 3;
+        }
+
+        public void Cmp8ModRm(bool rmFirst = false)
+        {
+            ModRmNoReturn((r1, r2) => (ushort) (r2 - r1));
+        }
+
+        public void Cmp16ModRm(bool rmFirst = false)
+        {
+            ModRmNoReturn((r1, r2) => (ushort) (r2 - r1), RegisterType.reg16);
+        }
+
+        public void Cmp8Imm8(Reg8 reg)
+        {
+            var regValue = registers.Get(reg);
+            var immValue = _memory[_ip + 1];
+            flagsRegister.SetFlagsFromInputAndResult(regValue - immValue, regValue, immValue);
+            _ip += 2;
+        }
+
+        public void Cmp16Imm16(Reg16 reg)
+        {
+            var regValue = registers.Get(reg);
+            var immValue = BinaryHelper.Read16Bit(_memory, _ip + 1);
+            flagsRegister.SetFlagsFromInputAndResult(regValue - immValue, regValue, immValue);
+            _ip += 3;
+        }
+
+        public void Inc8()
+        {
+            ModRm((r1, r2) => r2 + 1, RegisterType.reg8, false);
+        }
+
+        public void Inc16(Reg16 reg)
+        {
+            var value = registers.Get(reg);
+            value++;
+            flagsRegister.SetFlagsFromInputAndResult(value, registers.Get(reg), 0, 2);
+            registers.Set(reg, value);
+            _ip++;
+        }
+
+        public void Dec16(Reg16 reg)
+        {
+            var value = registers.Get(reg);
+            value--;
+            flagsRegister.SetFlagsFromInputAndResult(value, registers.Get(reg), 0, 2);
+            registers.Set(reg, value);
+            _ip++;
+        }
+
+        public void Pusha()
+        {
+            var sp = registers.Get(Reg16.sp);
+            stack.Push(Reg16.ax, Reg16.cx, Reg16.dx, Reg16.bx);
+            stack.PushValue(sp);
+            stack.Push(Reg16.bp, Reg16.si, Reg16.di);
+            _ip++;
+        }
+
+        public void Popa()
+        {
+            stack.Pop(Reg16.di, Reg16.si, Reg16.bp);
+            var sp = stack.PopValue16();
+            stack.Pop(Reg16.bx, Reg16.dx, Reg16.cx, Reg16.ax);
+            registers.Set(Reg16.sp, sp);
+            _ip++;
+        }
+
+        public void JumpIf(bool condition)
+        {
+            if (condition)
+            {
+                _ip += (char) _memory[_ip + 1] + 2;
+                return;
+            }
+
+            _ip += 2;
+        }
+
+        public void JumpIf(Flags flag, bool state)
+        {
+            JumpIf(FlagIsInState(flag, state));
+        }
+
+        private bool FlagIsInState(Flags flag, bool state)
+        {
+            return !(flagsRegister.HasFlag(flag) ^ state);
+        }
+
+        public void JumpIfAny(List<Tuple<Flags, bool>> conditions)
+        {
+            JumpIf(conditions.Exists(x => FlagIsInState(x.Item1, x.Item2)));
+        }
+
+        private void Nop()
+        {
+            _ip++;
+        }
+
+        private void Handle0x80()
+        {
+            Handle0x8X(RegisterType.reg8, 1, "0x80");
+        }
+
+        private void Handle0x81()
+        {
+            Handle0x8X(RegisterType.reg16, 2, "0x81");
+        }
+
+        private void Handle0x83()
+        {
+            Handle0x8X(RegisterType.reg16, 1, "0x83");
+        }
+
+        private void RetnImm16()
+        {
+            var bytes = BinaryHelper.Read16Bit(_memory, _ip + 1);
+            Retn();
+            registers.Set(Reg16.sp, (ushort) (registers.Get(Reg16.sp) + bytes));
+        }
+
+        private void Retn()
+        {
+            _ip = stack.PopValue16();
+        }
+
+        private void Les()
+        {
+            ModRm((dv, sv) =>
+            {
+                var es = sv >> 16;
+                registers.Set(Segments.es, (ushort) es);
+                var di = sv & 0xffff;
+                return di;
+            }, executorSegment32b);
+        }
+
+        private void Lds()
+        {
+            ModRm((dv, sv) =>
+            {
+                var ds = sv >> 16;
+                registers.Set(Segments.ds, (ushort) ds);
+                var di = sv & 0xffff;
+                return di;
+            }, executorSegment32b);
+        }
+
+        private int GetImm(int bytes)
+        {
+            if (bytes == 1) return _memory[_ip + 2];
+            return BinaryHelper.Read16Bit(_memory, _ip + 2);
+        }
+
+        private void Handle0x8X(RegisterType registerType, int immBytes, string instruction)
+        {
+            var modrm = _memory[_ip + 1];
+            var imm = GetImm(immBytes);
+            var opcode = ModRMDecoder.GetRegSegmentFromModRm(modrm);
+            switch (opcode)
+            {
+                case 0x0:
+                    ModRm((r1, r2) => (uint) (r2 + imm), registerType, false);
+                    break;
+                case 0x1:
+                    ModRm((r1, r2) => (uint) (r2 | imm), registerType, false);
+                    break;
+                case 0x2:
+                    ModRm((r1, r2) => (uint) (r2 + imm + (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), registerType,
+                        false);
+                    break;
+                case 0x3:
+                    ModRm((r1, r2) => (uint) (r2 - imm - (flagsRegister.HasFlag(Flags.Carry) ? 1 : 0)), registerType,
+                        false);
+                    break;
+                case 0x4:
+                    ModRm((r1, r2) => (uint) (r2 & imm), registerType, false);
+                    break;
+                case 0x5:
+                    ModRm((r1, r2) => (uint) (r2 - imm), registerType, false);
+                    break;
+                case 0x6:
+                    ModRm((r1, r2) => (uint) (r2 ^ imm), registerType, false);
+                    break;
+                case 0x7:
+                    ModRmNoReturn((r1, r2) => (uint) (r2 - imm), registerType);
+                    break;
+                default:
+                    throw new NotImplementedException($"{instruction} {opcode} not implemented");
+            }
+
+            _ip += 1 + immBytes;
         }
     }
 }

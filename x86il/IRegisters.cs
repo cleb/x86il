@@ -2,10 +2,10 @@
 
 namespace x86il
 {
-    interface IRegisters
+    internal interface IRegisters
     {
         byte Get(Enum register);
         void Set(Enum register, byte value);
-        void Set(Enum register, UInt16 value);
+        void Set(Enum register, ushort value);
     }
 }

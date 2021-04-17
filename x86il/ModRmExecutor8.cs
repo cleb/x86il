@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace x86il
+﻿namespace x86il
 {
     public class ModRmExecutor8 : ModRmExecutor
     {
-        public ModRmExecutor8(Registers regs, FlagsRegister flags, byte[] mem, ModRMDecoder modRm) : base(regs, flags, mem, modRm)
+        public ModRmExecutor8(Registers regs, FlagsRegister flags, byte[] mem, ModRMDecoder modRm) : base(regs, flags,
+            mem, modRm)
         {
         }
 
@@ -22,7 +17,7 @@ namespace x86il
 
         public override void WriteMemoryResult(ushort res)
         {
-            memory[decoder.Address] = (byte)res;
+            memory[decoder.Address] = (byte) res;
         }
     }
 }

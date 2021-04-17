@@ -3,7 +3,7 @@
 namespace x86il
 {
     [FlagsAttribute]
-    public enum Flags : UInt16
+    public enum Flags : ushort
     {
         Carry = 1,
         Parity = 4,

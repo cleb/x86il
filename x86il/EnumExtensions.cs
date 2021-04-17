@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace x86il
+﻿namespace x86il
 {
-    static class EnumExtensions
+    internal static class EnumExtensions
     {
         public static int ToNumBytes(this RegisterType type)
         {

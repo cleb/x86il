@@ -13,6 +13,7 @@ namespace x86il
         dh = 6,
         bh = 7
     }
+
     public enum Reg16
     {
         ax = 0,
@@ -24,6 +25,7 @@ namespace x86il
         si = 6,
         di = 7
     }
+
     public enum Segments
     {
         es = 0,
@@ -31,93 +33,99 @@ namespace x86il
         ss = 2,
         ds = 3
     }
+
     public enum RegisterType
     {
         reg8,
         reg16,
         segment
     }
+
     public class Registers
     {
-        private UInt32[] registers = {
+        private readonly uint[] registers =
+        {
             0, 0, 0, 0, 0, 0, 0, 0
         };
 
-        private UInt32[] segments = {
+        private readonly uint[] segments =
+        {
             0, 0, 0, 0
         };
 
 
         public byte Get(Reg8 register)
         {
-            if(register < Reg8.ah)
-            {
-                return (byte) registers[(int)register];
-            } else
-            {
-                return (byte)(registers[(register - Reg8.ah)]>>8);
-            }
+            if (register < Reg8.ah)
+                return (byte) registers[(int) register];
+            return (byte) (registers[register - Reg8.ah] >> 8);
         }
+
         public void Set(Reg8 register, byte value)
         {
             if (register < Reg8.ah)
             {
-                registers[(int)register] &= 0xff00;
-                registers[(int)register] |= value;
+                registers[(int) register] &= 0xff00;
+                registers[(int) register] |= value;
             }
             else
             {
-                registers[(int)register - (int)Reg8.ah] &= 0xff;
-                registers[(register - Reg8.ah)] |= (uint)(value<<8);
+                registers[(int) register - (int) Reg8.ah] &= 0xff;
+                registers[register - Reg8.ah] |= (uint) (value << 8);
             }
         }
-        public UInt16 Get(Reg16 register)
+
+        public ushort Get(Reg16 register)
         {
-            return (UInt16)registers[(int)register];
+            return (ushort) registers[(int) register];
         }
-        public void Set(Reg16 register, UInt16 value)
+
+        public void Set(Reg16 register, ushort value)
         {
-            registers[(int)register] = value;
+            registers[(int) register] = value;
         }
-        public UInt16 Get(Segments segment)
+
+        public ushort Get(Segments segment)
         {
-            return (UInt16)segments[(int)segment];
+            return (ushort) segments[(int) segment];
         }
-        public void Set(Segments segment, UInt16 value)
+
+        public void Set(Segments segment, ushort value)
         {
-            segments[(int)segment] = value;
+            segments[(int) segment] = value;
         }
-        public UInt16 Get(UInt16 register, RegisterType type)
+
+        public ushort Get(ushort register, RegisterType type)
         {
             switch (type)
             {
                 case RegisterType.reg8:
-                    return Get((Reg8)register);
+                    return Get((Reg8) register);
                 case RegisterType.reg16:
-                    return Get((Reg16)register);
+                    return Get((Reg16) register);
                 case RegisterType.segment:
-                    return Get((Segments)register);
+                    return Get((Segments) register);
                 default:
                     throw new InvalidOperationException();
             }
         }
-        public void Set(UInt16 register, UInt16 value, RegisterType type)
+
+        public void Set(ushort register, ushort value, RegisterType type)
         {
             switch (type)
             {
                 case RegisterType.reg8:
-                    Set((Reg8)register,(Byte)value);
+                    Set((Reg8) register, (byte) value);
                     break;
                 case RegisterType.reg16:
-                    Set((Reg16)register,value);
+                    Set((Reg16) register, value);
                     break;
                 case RegisterType.segment:
-                    Set((Segments)register,value);
+                    Set((Segments) register, value);
                     break;
                 default:
                     throw new InvalidOperationException();
             }
         }
     }
-
 }

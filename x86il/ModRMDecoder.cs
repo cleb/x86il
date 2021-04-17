@@ -1,19 +1,11 @@
-﻿
-using System;
+﻿using System;
 
 namespace x86il
 {
     public class ModRMDecoder
     {
-        byte[] memory;
-        Registers registers;
-        
-        public ushort Address { get; private set; }
-        public ushort R1 { get; private set; }
-        public ushort R2 { get; private set; }
-        public ModRMType Type { get; private set; }
-
-        public int IpShift { get; private set; }
+        private readonly byte[] memory;
+        private readonly Registers registers;
 
         public ModRMDecoder(byte[] mem, Registers regs)
         {
@@ -21,9 +13,16 @@ namespace x86il
             registers = regs;
         }
 
+        public ushort Address { get; private set; }
+        public ushort R1 { get; private set; }
+        public ushort R2 { get; private set; }
+        public ModRMType Type { get; private set; }
+
+        public int IpShift { get; private set; }
+
         public void Decode(int ip)
         {
-            byte modrm = memory[ip + 1];
+            var modrm = memory[ip + 1];
             R1 = GetRegSegmentFromModRm(modrm);
             switch (modrm >> 6)
             {
@@ -34,14 +33,14 @@ namespace x86il
                     Type = ModRMType.RM;
                     break;
                 case 0x03:
-                    R2 = (UInt16)((modrm) & 7);
+                    R2 = (ushort) (modrm & 7);
                     IpShift = 2;
                     Type = ModRMType.Reg;
                     break;
             }
         }
 
-        private UInt16 getEffectiveAddressFromModRm(UInt16 modrm, int ip)
+        private ushort getEffectiveAddressFromModRm(ushort modrm, int ip)
         {
             switch (modrm >> 6)
             {
@@ -58,30 +57,31 @@ namespace x86il
                         return getEffectiveAddress(modrm);
                     }
                 case 0x01:
-                    byte displacement = memory[ip + 2];
+                    var displacement = memory[ip + 2];
                     IpShift = 3;
-                    return (UInt16)(getEffectiveAddress(modrm) + displacement);
+                    return (ushort) (getEffectiveAddress(modrm) + displacement);
                 case 0x02:
-                    var disp16 = BinaryHelper.Read16Bit(memory, ip + 2); ;
+                    var disp16 = BinaryHelper.Read16Bit(memory, ip + 2);
+                    ;
                     IpShift = 4;
-                    return (UInt16)(getEffectiveAddress(modrm) + disp16);
+                    return (ushort) (getEffectiveAddress(modrm) + disp16);
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        private UInt16 getEffectiveAddress(UInt16 modrm)
+        private ushort getEffectiveAddress(ushort modrm)
         {
             switch (modrm & 7)
             {
                 case 0x0:
-                    return (UInt16)(registers.Get(Reg16.bx) + registers.Get(Reg16.si));
+                    return (ushort) (registers.Get(Reg16.bx) + registers.Get(Reg16.si));
                 case 0x1:
-                    return (UInt16)(registers.Get(Reg16.bx) + registers.Get(Reg16.di));
+                    return (ushort) (registers.Get(Reg16.bx) + registers.Get(Reg16.di));
                 case 0x2:
-                    return (UInt16)(registers.Get(Reg16.bp) + registers.Get(Reg16.si));
+                    return (ushort) (registers.Get(Reg16.bp) + registers.Get(Reg16.si));
                 case 0x3:
-                    return (UInt16)(registers.Get(Reg16.bp) + registers.Get(Reg16.di));
+                    return (ushort) (registers.Get(Reg16.bp) + registers.Get(Reg16.di));
                 case 0x4:
                     return registers.Get(Reg16.si);
                 case 0x5:
@@ -97,7 +97,7 @@ namespace x86il
 
         public static ushort GetRegSegmentFromModRm(byte modrm)
         {
-            return (UInt16)((modrm >> 3) & 7);
+            return (ushort) ((modrm >> 3) & 7);
         }
     }
 }

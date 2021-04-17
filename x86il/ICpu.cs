@@ -2,17 +2,16 @@
 
 namespace x86il
 {
-    interface ICpu
+    internal interface ICpu
     {
         void Execute(int ipStart, int ipEnd);
-        Byte GetRegister(Reg8 register);
-        UInt16 GetRegister(Reg16 register);
-        void SetRegister(Reg8 register, Byte value);
-        void SetRegister(Reg16 register, UInt16 value);
-        void SetRegister(Segments register, UInt16 value);
+        byte GetRegister(Reg8 register);
+        ushort GetRegister(Reg16 register);
+        void SetRegister(Reg8 register, byte value);
+        void SetRegister(Reg16 register, ushort value);
+        void SetRegister(Segments register, ushort value);
 
-        Byte GetInDs(UInt16 offset);
-        void SetInterruptHandler(Byte number, Action handler);
-        
+        byte GetInDs(ushort offset);
+        void SetInterruptHandler(byte number, Action handler);
     }
 }

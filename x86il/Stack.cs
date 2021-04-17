@@ -1,33 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace x86il
+﻿namespace x86il
 {
     public class Stack
     {
-        Registers registers;
-        Byte[] memory;
+        private readonly byte[] memory;
+        private readonly Registers registers;
+
         public Stack(Registers registers, byte[] memory)
         {
             this.registers = registers;
             this.memory = memory;
         }
 
-        public void PushValue(UInt16 Value)
+        public void PushValue(ushort Value)
         {
             var sp = registers.Get(Reg16.sp) - 2;
             BinaryHelper.Write16Bit(memory, (registers.Get(Segments.ss) << 4) + sp, Value);
-            registers.Set(Reg16.sp, (UInt16)(sp));
+            registers.Set(Reg16.sp, (ushort) sp);
         }
 
-        public UInt16 PopValue16()
+        public ushort PopValue16()
         {
             var sp = registers.Get(Reg16.sp);
             var ret = BinaryHelper.Read16Bit(memory, (registers.Get(Segments.ss) << 4) + sp);
-            registers.Set(Reg16.sp, (UInt16)(sp + 2));
+            registers.Set(Reg16.sp, (ushort) (sp + 2));
             return ret;
         }
 
@@ -55,8 +50,9 @@ namespace x86il
             registers.Set(reg, register);
         }
 
-        public void Push(params Reg16[] regs) {
-            foreach(var reg in regs)
+        public void Push(params Reg16[] regs)
+        {
+            foreach (var reg in regs)
                 Push(reg);
         }
 
@@ -65,7 +61,5 @@ namespace x86il
             foreach (var reg in regs)
                 Pop(reg);
         }
-
-
     }
 }
