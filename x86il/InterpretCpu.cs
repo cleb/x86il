@@ -409,6 +409,11 @@ namespace x86il
         {
             JumpIf(conditions.Exists(x => FlagIsInState(x.Item1,x.Item2)));
         }
+        
+        private void Nop()
+        {
+            ip++;
+        }
 
         private void Handle0x80()
         {
@@ -856,7 +861,9 @@ namespace x86il
                     case 0x8f:
                         PopRM16();
                         break;
-
+                    case 0x90:
+                        Nop();
+                        break;
                     case 0xb0:
                         Mov8Imm(Reg8.al);
                         break;
