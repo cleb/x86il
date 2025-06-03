@@ -1152,12 +1152,18 @@ namespace x86il
         private uint Sar(uint value, int count, int bits)
         {
             uint mask = (uint)((1 << bits) - 1);
-            bool sign = ((value >> (bits - 1)) & 1) != 0;
             uint result;
-            if (sign)
-                result = (uint)(((int)value) >> count) & mask;
+
+            if (bits == 8)
+            {
+                int sval = (sbyte)(value & mask);
+                result = (uint)(sval >> count) & mask;
+            }
             else
-                result = value >> count;
+            {
+                int sval = (short)(value & mask);
+                result = (uint)(sval >> count) & mask;
+            }
             bool cf = ((value >> (count - 1)) & 1) != 0;
             flagsRegister.SetFlagBasedOnResult(Flags.Carry, cf);
             if (count == 1)
