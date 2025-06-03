@@ -765,5 +765,68 @@ namespace x86il.Tests
             Assert.AreEqual(0x4815, cpu.GetRegister(Reg16.di));
             Assert.AreEqual(0x1623, cpu.GetRegister(Reg16.ax));
         }
+
+        [Test]
+        public void ExecuteTestRolBl1()
+        {
+            var cpu = RunAsmTest("RolBl1");
+            Assert.AreEqual(4, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestRorBl1()
+        {
+            var cpu = RunAsmTest("RorBl1");
+            Assert.AreEqual(2, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestRclBl1()
+        {
+            var cpu = RunAsmTest("RclBl1");
+            Assert.AreEqual(11, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestRcrBl1()
+        {
+            var cpu = RunAsmTest("RcrBl1");
+            Assert.AreEqual(0x84, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestShlBl1()
+        {
+            var cpu = RunAsmTest("ShlBl1");
+            Assert.AreEqual(6, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestShrBl1()
+        {
+            var cpu = RunAsmTest("ShrBl1");
+            Assert.AreEqual(2, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestSarBl1()
+        {
+            var cpu = RunAsmTest("SarBl1");
+            Assert.AreEqual(0xf8, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestShlBlCl()
+        {
+            var cpu = RunAsmTest("ShlBlCl");
+            Assert.AreEqual(12, cpu.GetRegister(Reg8.bl));
+        }
+
+        [Test]
+        public void ExecuteTestRolBxCl()
+        {
+            var cpu = RunAsmTest("RolBxCl");
+            Assert.AreEqual(4, cpu.GetRegister(Reg16.bx));
+        }
     }
 }
