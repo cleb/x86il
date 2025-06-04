@@ -514,6 +514,18 @@ namespace x86il
                     case 0xcd:
                         Interrupt();
                         break;
+                    case 0xd0:
+                        ShiftGroup(RegisterType.reg8, false);
+                        break;
+                    case 0xd1:
+                        ShiftGroup(RegisterType.reg16, false);
+                        break;
+                    case 0xd2:
+                        ShiftGroup(RegisterType.reg8, true);
+                        break;
+                    case 0xd3:
+                        ShiftGroup(RegisterType.reg16, true);
+                        break;
                     case 0xfe:
                         Inc8();
                         break;
@@ -535,19 +547,21 @@ namespace x86il
         private void ModRm(Func<ushort, uint, uint> function,
             RegisterType r1Type = RegisterType.reg8,
             bool rmFirst = true,
-            bool useResult = true)
+            bool useResult = true,
+            bool setFlags = true)
         {
             var executor = GetExecutor(r1Type);
-            ModRm(function, executor, rmFirst, useResult);
+            ModRm(function, executor, rmFirst, useResult, setFlags);
         }
 
         private void ModRm(Func<ushort, uint, uint> function,
             ModRmExecutor executor,
             bool rmFirst = true,
-            bool useResult = true)
+            bool useResult = true,
+            bool setFlags = true)
         {
             _decoder.Decode(_ip);
-            executor.Execute(function, rmFirst, useResult);
+            executor.Execute(function, rmFirst, useResult, setFlags);
             _ip += _decoder.IpShift;
         }
 
@@ -977,6 +991,189 @@ namespace x86il
         {
             if (bytes == 1) return _memory[_ip + 2];
             return BinaryHelper.Read16Bit(_memory, _ip + 2);
+        }
+
+        private void ShiftGroup(RegisterType type, bool useCl)
+        {
+            int count = useCl ? registers.Get(Reg8.cl) : 1;
+            bool modify = count != 0;
+
+            ModRm((r1, value) =>
+            {
+                // _decoder is decoded inside ModRm
+                if (!modify)
+                    return value;
+
+                int bits = type == RegisterType.reg8 ? 8 : 16;
+                uint mask = (uint)((1 << bits) - 1);
+
+                value &= mask;
+                count &= 0x1f;
+                return ExecuteShift(_decoder.R1, value, count, bits);
+            }, type, false, modify, modify);
+        }
+
+        private uint ExecuteShift(int opcode, uint value, int count, int bits)
+        {
+            switch (opcode)
+            {
+                case 0x0:
+                    return Rol(value, count, bits);
+                case 0x1:
+                    return Ror(value, count, bits);
+                case 0x2:
+                    return Rcl(value, count, bits);
+                case 0x3:
+                    return Rcr(value, count, bits);
+                case 0x4:
+                case 0x6:
+                    return Shl(value, count, bits);
+                case 0x5:
+                    return Shr(value, count, bits);
+                case 0x7:
+                    return Sar(value, count, bits);
+                default:
+                    throw new NotImplementedException($"ShiftGroup opcode {opcode} not implemented");
+            }
+        }
+
+        private uint Rol(uint value, int count, int bits)
+        {
+            count %= bits;
+            uint result = ((value << count) | (value >> (bits - count))) & ((uint)(1 << bits) - 1);
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, (result & 1) != 0);
+            if (count == 1)
+            {
+                bool msb = ((result >> (bits - 1)) & 1) != 0;
+                bool sec = ((result >> (bits - 2)) & 1) != 0;
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, msb ^ sec);
+            }
+            flagsRegister.CheckZero((int)result, 0, 0);
+            flagsRegister.CheckSign(result, bits / 8);
+            flagsRegister.CheckParity((int)result);
+            return result;
+        }
+
+        private uint Ror(uint value, int count, int bits)
+        {
+            count %= bits;
+            uint result = ((value >> count) | (value << (bits - count))) & ((uint)(1 << bits) - 1);
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, ((result >> (bits - 1)) & 1) != 0);
+            if (count == 1)
+            {
+                bool msb = ((result >> (bits - 1)) & 1) != 0;
+                bool sec = ((result >> (bits - 2)) & 1) != 0;
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, msb ^ sec);
+            }
+            flagsRegister.CheckZero((int)result, 0, 0);
+            flagsRegister.CheckSign(result, bits / 8);
+            flagsRegister.CheckParity((int)result);
+            return result;
+        }
+
+        private uint Rcl(uint value, int count, int bits)
+        {
+            uint mask = (uint)((1 << bits) - 1);
+            uint cf = flagsRegister.HasFlag(Flags.Carry) ? 1u : 0u;
+            for (int i = 0; i < count; i++)
+            {
+                uint newCf = (value >> (bits - 1)) & 1u;
+                value = ((value << 1) | cf) & mask;
+                cf = newCf;
+            }
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, cf != 0);
+            if (count == 1)
+            {
+                bool msb = ((value >> (bits - 1)) & 1) != 0;
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, msb ^ (cf != 0));
+            }
+            flagsRegister.CheckZero((int)value, 0, 0);
+            flagsRegister.CheckSign(value, bits / 8);
+            flagsRegister.CheckParity((int)value);
+            return value & mask;
+        }
+
+        private uint Rcr(uint value, int count, int bits)
+        {
+            uint mask = (uint)((1 << bits) - 1);
+            uint cf = flagsRegister.HasFlag(Flags.Carry) ? 1u : 0u;
+            for (int i = 0; i < count; i++)
+            {
+                uint newCf = value & 1u;
+                value = (value >> 1) | (cf << (bits - 1));
+                value &= mask;
+                cf = newCf;
+            }
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, cf != 0);
+            if (count == 1)
+            {
+                bool msb = ((value >> (bits - 1)) & 1) != 0;
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, msb ^ ((cf != 0)));
+            }
+            flagsRegister.CheckZero((int)value, 0, 0);
+            flagsRegister.CheckSign(value, bits / 8);
+            flagsRegister.CheckParity((int)value);
+            return value & mask;
+        }
+
+        private uint Shl(uint value, int count, int bits)
+        {
+            uint mask = (uint)((1 << bits) - 1);
+            uint result = (value << count) & mask;
+            bool cf = ((value >> (bits - count)) & 1) != 0;
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, cf);
+            if (count == 1)
+            {
+                bool msb = ((result >> (bits - 1)) & 1) != 0;
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, msb ^ cf);
+            }
+            flagsRegister.CheckZero((int)result, 0, 0);
+            flagsRegister.CheckSign(result, bits / 8);
+            flagsRegister.CheckParity((int)result);
+            return result;
+        }
+
+        private uint Shr(uint value, int count, int bits)
+        {
+            uint result = value >> count;
+            bool cf = ((value >> (count - 1)) & 1) != 0;
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, cf);
+            if (count == 1)
+            {
+                bool msbOrig = ((value >> (bits - 1)) & 1) != 0;
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, msbOrig);
+            }
+            flagsRegister.CheckZero((int)result, 0, 0);
+            flagsRegister.CheckSign(result, bits / 8);
+            flagsRegister.CheckParity((int)result);
+            return result;
+        }
+
+        private uint Sar(uint value, int count, int bits)
+        {
+            uint mask = (uint)((1 << bits) - 1);
+            uint result;
+
+            if (bits == 8)
+            {
+                int sval = (sbyte)(value & mask);
+                result = (uint)(sval >> count) & mask;
+            }
+            else
+            {
+                int sval = (short)(value & mask);
+                result = (uint)(sval >> count) & mask;
+            }
+            bool cf = ((value >> (count - 1)) & 1) != 0;
+            flagsRegister.SetFlagBasedOnResult(Flags.Carry, cf);
+            if (count == 1)
+            {
+                flagsRegister.SetFlagBasedOnResult(Flags.Overflow, false);
+            }
+            flagsRegister.CheckZero((int)result, 0, 0);
+            flagsRegister.CheckSign(result, bits / 8);
+            flagsRegister.CheckParity((int)result);
+            return result & mask;
         }
 
         private void Handle0X8X(RegisterType registerType, int immBytes, string instruction)
